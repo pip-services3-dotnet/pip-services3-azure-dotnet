@@ -1,6 +1,4 @@
-﻿using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-using PipServices.Components.Auth;
+﻿using PipServices.Components.Auth;
 using PipServices.Commons.Config;
 using PipServices.Components.Connect;
 using PipServices.Commons.Data;
@@ -11,8 +9,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
+using Microsoft.Azure.ServiceBus;
+
 namespace PipServices.Azure.Queues
 {
+    /*
     public class ServiceBusMessageTopic : MessageQueue
     {
         private string _topicName;
@@ -72,10 +73,10 @@ namespace PipServices.Azure.Queues
 
         public override async Task CloseAsync(string correlationId)
         {
-            if (_topic != null && _topic.IsClosed == false)
+            if (_topic != null && _topic.IsClosedOrClosing == false)
                 await _topic.CloseAsync();
 
-            if (_subscription != null && _subscription.IsClosed == false)
+            if (_subscription != null && _subscription.IsClosedOrClosing == false)
             {
                 await _subscription.CloseAsync();
 
@@ -109,7 +110,7 @@ namespace PipServices.Azure.Queues
                     {
                         _logger.Info(null, "Connecting topic {0} to Topic={1};{2}", Name, _topicName, _connectionString);
 
-                        _topic = TopicClient.CreateFromConnectionString(_connectionString, _topicName);
+                        _topic = new TopicClient(_connectionString, _topicName);
                     }
                 }
             }
@@ -144,7 +145,7 @@ namespace PipServices.Azure.Queues
                         _logger.Info(null, "Connecting subscription {0} to Topic={1};Subscription={2};{3}",
                             Name, _topic, _subscription, _connectionString);
 
-                        _subscription = SubscriptionClient.CreateFromConnectionString(
+                        _subscription = new SubscriptionClient(
                             _connectionString, _topicName, _subscriptionName, ReceiveMode.PeekLock);
                     }
                 }
@@ -358,4 +359,5 @@ namespace PipServices.Azure.Queues
             _logger.Trace(correlationId, "Cleared queue {0}", this);
         }
     }
+    */
 }

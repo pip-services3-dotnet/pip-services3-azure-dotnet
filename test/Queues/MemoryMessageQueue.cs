@@ -1,17 +1,17 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PipServices.Messaging.Queues;
+﻿using PipServices.Messaging.Queues;
+
 using System.Threading.Tasks;
+
+using Xunit;
 
 namespace PipServices.Azure.Queues
 {
-    [TestClass]
     public class MemoryMessageQueueTest
     {
         MemoryMessageQueue Queue { get; set; }
         MessageQueueFixture Fixture { get; set; }
 
-        [TestInitialize]
-        public void TestInitialize()
+        public MemoryMessageQueueTest()
         {
             Queue = new MemoryMessageQueue("TestQueue");
             //Queue.SetReferences(new MockReferences());
@@ -20,64 +20,55 @@ namespace PipServices.Azure.Queues
             Fixture = new MessageQueueFixture(Queue);
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMockSendReceiveMessageAsync()
         {
             await Fixture.TestSendReceiveMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMockReceiveSendMessageAsync()
         {
             await Fixture.TestReceiveSendMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMockReceiveAndCompleteAsync()
         {
             await Fixture.TestReceiveAndCompleteMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMockReceiveAndAbandonAsync()
         {
             await Fixture.TestReceiveAndAbandonMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMockSendPeekMessageAsync()
         {
             await Fixture.TestSendPeekMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMockPeekNoMessageAsync()
         {
             await Fixture.TestPeekNoMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMockOnMessageAsync()
         {
             await Fixture.TestOnMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMockMoveToDeadMessageAsync()
         {
             await Fixture.TestMoveToDeadMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestMessageCountAsync()
         {
             await Fixture.TestMessageCountAsync();

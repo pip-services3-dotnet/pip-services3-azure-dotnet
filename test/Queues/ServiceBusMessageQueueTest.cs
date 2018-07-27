@@ -1,76 +1,76 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PipServices.Commons.Config;
+﻿using PipServices.Components.Config;
 using PipServices.Components.Connect;
+
 using System.Threading.Tasks;
+
+using Xunit;
 
 namespace PipServices.Azure.Queues
 {
-    [TestClass]
     public class ServiceBusMessageQueueTest
     {
         ServiceBusMessageQueue Queue { get; set; }
         MessageQueueFixture Fixture { get; set; }
 
-        [TestInitialize]
-        public void TestInitialize()
+        public ServiceBusMessageQueueTest()
         {
-            var config = YamlConfigReader.ReadConfig(null, "..\\..\\..\\..\\config\\test_connections.yaml");
+            var config = YamlConfigReader.ReadConfig(null, "..\\..\\..\\..\\config\\test_connections.yaml", null);
             var connection = ConnectionParams.FromString(config.GetAsString("sb_queue"));
             Queue = new ServiceBusMessageQueue("TestQueue", connection);
             Queue.OpenAsync(null).Wait();
             Fixture = new MessageQueueFixture(Queue);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSBQueueSendReceiveMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestSendReceiveMessageAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSBQueueReceiveSendMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestReceiveSendMessageAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSBQueueReceiveAndCompleteAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestReceiveAndCompleteMessageAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSBQueueReceiveAndAbandonAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestReceiveAndAbandonMessageAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSBQueueSendPeekMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestSendPeekMessageAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSBQueuePeekNoMessageAsync()
         {
             await Queue.ClearAsync(null);
             //await Fixture.TestPeekNoMessageAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestSBQueueOnMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestOnMessageAsync();
         }
 
-        [TestMethod]
+        [Fact]
         // For some reasons it randomly fails
         public async Task TestSBQueueMoveToDeadMessageAsync()
         {
@@ -78,8 +78,7 @@ namespace PipServices.Azure.Queues
             await Fixture.TestMoveToDeadMessageAsync();
         }
 
-        [TestMethod]
-        [TestCategory("Build")]
+        [Fact]
         public async Task TestSBQueueMessageCountAsync()
         {
             await Fixture.TestMessageCountAsync();

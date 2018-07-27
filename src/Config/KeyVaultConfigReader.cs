@@ -36,7 +36,7 @@ namespace PipServices.Azure.Config
             _credentialResolver.Configure(config, true);
         }
 
-        protected override ConfigParams PerformReadConfig(string correlationId)
+        protected ConfigParams PerformReadConfig(string correlationId)
         {
             try
             {
@@ -62,15 +62,20 @@ namespace PipServices.Azure.Config
             }
         }
 
-        public static ConfigParams ReadConfig(string correlationId, ConfigParams config)
+        public static new ConfigParams ReadConfig(string correlationId, ConfigParams config)
         {
-            return new KeyVaultConfigReader(config).ReadConfig(correlationId);
+            return new KeyVaultConfigReader(config).PerformReadConfig(correlationId);
         }
 
         public static ConfigParams ReadConfig(string correlationId, string connectionString)
         {
             var config = ConfigParams.FromString(connectionString);
-            return new KeyVaultConfigReader(config).ReadConfig(correlationId);
+            return new KeyVaultConfigReader(config).PerformReadConfig(correlationId);
+        }
+
+        protected override ConfigParams PerformReadConfig(string correlationId, ConfigParams parameters)
+        {
+            return PerformReadConfig(correlationId);
         }
     }
 }

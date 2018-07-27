@@ -1,6 +1,4 @@
-﻿using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-using PipServices.Components.Auth;
+﻿using PipServices.Components.Auth;
 using PipServices.Commons.Config;
 using PipServices.Components.Connect;
 using PipServices.Commons.Errors;
@@ -14,6 +12,7 @@ using System.Threading.Tasks;
 namespace PipServices.Azure.Queues
 {
     // This implementation doesn't use subscriptions. Don't use it unless you know what you are doing!
+    /*
     public class ServiceBusMessageTopic2 : MessageQueue
     {
         private long DefaultCheckInterval = 10000;
@@ -297,4 +296,5 @@ namespace PipServices.Azure.Queues
         }
 
     }
+    */
 }

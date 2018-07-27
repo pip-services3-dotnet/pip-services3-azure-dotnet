@@ -1,6 +1,4 @@
-﻿using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-using PipServices.Components.Auth;
+﻿using PipServices.Components.Auth;
 using PipServices.Commons.Config;
 using PipServices.Components.Connect;
 using PipServices.Commons.Errors;
@@ -12,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace PipServices.Azure.Queues
 {
+    /*
     public class ServiceBusMessageQueue : MessageQueue
     {
         private string _queueName;
@@ -284,4 +283,5 @@ namespace PipServices.Azure.Queues
             _logger.Trace(correlationId, "Cleared queue {0}", this);
         }
     }
+    */
 }
