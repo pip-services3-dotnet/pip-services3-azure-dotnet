@@ -6,7 +6,7 @@
     <AssemblyName>PipServices.Azure</AssemblyName>
     <ApplicationIcon />
     <Win32Resource />
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
     <Authors>Sergey Seroukhov, Alex Mazur</Authors>
     <Copyright>Conceptual Vision Consulting LLC. 2017-2018</Copyright>
     <Description>Azure components for Pip.Services in .NET</Description>
@@ -20,16 +20,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.6.4" />
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.0.2" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.8" />
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.2.162" />
-    <PackageReference Include="PipServices.Commons" Version="3.0.0" />
-    <PackageReference Include="PipServices.Components" Version="3.0.1" />
-    <PackageReference Include="PipServices.Container" Version="3.0.0" />
-    <PackageReference Include="PipServices.Messaging" Version="3.0.0" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.7.1" />
+    <PackageReference Include="PipServices.Commons" Version="3.0.2" />
+    <PackageReference Include="PipServices.Components" Version="3.0.2" />
+    <PackageReference Include="PipServices.Container" Version="3.0.1" />
+    <PackageReference Include="PipServices.Messaging" Version="3.0.1" />
   </ItemGroup>
 
 </Project>

@@ -87,9 +87,9 @@ namespace PipServices.Azure.Queues
         //[TestMethod]
         //public async Task TestStorageNullMessageAsync()
         //{
-        //    var envelop = await Queue.ReceiveAsync(TimeSpan.FromMilliseconds(10000000));
-        //    await Queue.CompleteAsync(envelop);
-        //    Assert.IsNotNull(envelop);
+        //    var envelope = await Queue.ReceiveAsync(TimeSpan.FromMilliseconds(10000000));
+        //    await Queue.CompleteAsync(envelope);
+        //    Assert.IsNotNull(envelope);
         //}
     }
 }
