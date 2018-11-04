@@ -1,14 +1,14 @@
-﻿using PipServices.Components.Auth;
-using PipServices.Commons.Config;
-using PipServices.Components.Connect;
-using PipServices.Commons.Errors;
-using PipServices.Messaging.Queues;
+﻿using PipServices3.Components.Auth;
+using PipServices3.Commons.Config;
+using PipServices3.Components.Connect;
+using PipServices3.Commons.Errors;
+using PipServices3.Messaging.Queues;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace PipServices.Azure.Queues
+namespace PipServices3.Azure.Queues
 {
     /*
     public class ServiceBusMessageQueue : MessageQueue

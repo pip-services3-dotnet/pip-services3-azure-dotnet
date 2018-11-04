@@ -1,10 +1,10 @@
 ﻿//using Microsoft.VisualStudio.TestTools.UnitTesting;
-//using PipServices.Commons.Auth;
-//using PipServices.Commons.Config;
-//using PipServices.Commons.Connect;
+//using PipServices3.Commons.Auth;
+//using PipServices3.Commons.Config;
+//using PipServices3.Commons.Connect;
 //using System.Threading.Tasks;
 
-//namespace PipServices.Azure.Auth
+//namespace PipServices3.Azure.Auth
 //{
 //    [TestClass]
 //    public class KeyVaultClientTest

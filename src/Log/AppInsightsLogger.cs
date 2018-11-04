@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
-using PipServices.Commons.Config;
-using PipServices.Components.Log;
-using PipServices.Commons.Refer;
-using PipServices.Components.Auth;
-using PipServices.Commons.Convert;
+using PipServices3.Commons.Config;
+using PipServices3.Components.Log;
+using PipServices3.Commons.Refer;
+using PipServices3.Components.Auth;
+using PipServices3.Commons.Convert;
 using System.Text;
 
-namespace PipServices.Azure.Log
+namespace PipServices3.Azure.Log
 {
     /// <summary>
     /// Class AppInsightsLogger.
     /// </summary>
-    /// <seealso cref="PipServices.Commons.Log.Logger" />
-    /// <seealso cref="PipServices.Commons.Refer.IDescriptable" />
+    /// <seealso cref="PipServices3.Commons.Log.Logger" />
+    /// <seealso cref="PipServices3.Commons.Refer.IDescriptable" />
     public class AppInsightsLogger : Logger
     {
         private CredentialResolver _credentialResolver = new CredentialResolver();

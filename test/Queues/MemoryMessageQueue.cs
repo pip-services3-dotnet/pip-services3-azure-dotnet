@@ -1,10 +1,10 @@
-﻿using PipServices.Messaging.Queues;
+﻿using PipServices3.Messaging.Queues;
 
 using System.Threading.Tasks;
 
 using Xunit;
 
-namespace PipServices.Azure.Queues
+namespace PipServices3.Azure.Queues
 {
     public class MemoryMessageQueueTest
     {

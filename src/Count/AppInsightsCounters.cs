@@ -1,12 +1,12 @@
 ﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
-using PipServices.Components.Auth;
-using PipServices.Commons.Config;
-using PipServices.Components.Count;
-using PipServices.Commons.Refer;
+using PipServices3.Components.Auth;
+using PipServices3.Commons.Config;
+using PipServices3.Components.Count;
+using PipServices3.Commons.Refer;
 using System.Collections.Generic;
 
-namespace PipServices.Azure.Count
+namespace PipServices3.Azure.Count
 {
     public class AppInsightsCounters : CachedCounters
     {

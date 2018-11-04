@@ -1,11 +1,11 @@
-﻿using PipServices.Components.Config;
-using PipServices.Components.Connect;
+﻿using PipServices3.Components.Config;
+using PipServices3.Components.Connect;
 
 using System.Threading.Tasks;
 
 using Xunit;
 
-namespace PipServices.Azure.Queues
+namespace PipServices3.Azure.Queues
 {
     public class ServiceBusMessageTopicTest
     {

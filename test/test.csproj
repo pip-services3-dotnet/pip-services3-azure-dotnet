@@ -4,8 +4,8 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
-    <RootNamespace>PipServices.Azure</RootNamespace>
-    <AssemblyName>PipServices.Azure.Test</AssemblyName>
+    <RootNamespace>PipServices3.Azure</RootNamespace>
+    <AssemblyName>PipServices3.Azure.Test</AssemblyName>
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />

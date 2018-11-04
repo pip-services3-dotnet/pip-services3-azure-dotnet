@@ -1,12 +1,12 @@
-﻿using PipServices.Azure.Auth;
-using PipServices.Components.Auth;
-using PipServices.Commons.Config;
-using PipServices.Components.Config;
-using PipServices.Components.Connect;
-using PipServices.Commons.Refer;
+﻿using PipServices3.Azure.Auth;
+using PipServices3.Components.Auth;
+using PipServices3.Commons.Config;
+using PipServices3.Components.Config;
+using PipServices3.Components.Connect;
+using PipServices3.Commons.Refer;
 using System;
 
-namespace PipServices.Azure.Config
+namespace PipServices3.Azure.Config
 {
     /// <summary>
     /// Reads configuration from Azure KeyVault secrets. Secret key becomes a parameter name

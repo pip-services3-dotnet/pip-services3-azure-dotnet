@@ -1,6 +1,6 @@
-# <img src="https://github.com/pip-services/pip-services/raw/master/design/Logo.png" alt="Pip.Services Logo" style="max-width:30%"> <br/> Azure specific components .NET
+# <img src="https://github.com/pip-services3/pip-services3/raw/master/design/Logo.png" alt="Pip.Services Logo" style="max-width:30%"> <br/> Azure specific components .NET
 
-This library is a part of [Pip.Services](https://github.com/pip-services/pip-services) project.
+This library is a part of [Pip.Services](https://github.com/pip-services3/pip-services3) project.
 It provides components built on top of Azure services:
 
 - **Auth** - KeyVault credential provider
@@ -11,10 +11,10 @@ It provides components built on top of Azure services:
 
 Quick Links:
 
-* [Downloads](https://github.com/pip-services-dotnet/pip-services-azure-dotnet/blob/master/doc/Downloads.md)
-* [API Reference](https://rawgit.com/pip-services-dotnet/pip-services-azure-dotnet/master/doc/api/index.html)
-* [Building and Testing](https://github.com/pip-services-dotnet/pip-services-azure-dotnet/blob/master/doc/Development.md)
-* [Contributing](https://github.com/pip-services-dotnet/pip-services-azure-dotnet/blob/master/doc/Development.md/#contrib)
+* [Downloads](https://github.com/pip-services3-dotnet/pip-services3-azure-dotnet/blob/master/doc/Downloads.md)
+* [API Reference](https://rawgit.com/pip-services3-dotnet/pip-services3-azure-dotnet/master/doc/api/index.html)
+* [Building and Testing](https://github.com/pip-services3-dotnet/pip-services3-azure-dotnet/blob/master/doc/Development.md)
+* [Contributing](https://github.com/pip-services3-dotnet/pip-services3-azure-dotnet/blob/master/doc/Development.md/#contrib)
 
 ## Acknowledgements
 

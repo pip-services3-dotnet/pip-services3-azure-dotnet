@@ -13,7 +13,7 @@
 ## <a name="2.0.0"></a> 2.0.0 (2017-02-27)
 
 ### Breaking Changes
-* Migrated to **pip-services** 2.0
+* Migrated to **pip-services3** 2.0
 
 ## <a name="1.0.0"></a> 1.0.0 (2016-12-10)
 

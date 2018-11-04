@@ -2,15 +2,15 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Services.Runtime;
-using PipServices.Components.Build;
-using PipServices.Commons.Errors;
-using PipServices.Components.Log;
-using PipServices.Commons.Refer;
-using PipServices.Commons.Run;
-using PipServices.Components.Info;
-using PipServices.Container.Refer;
+using PipServices3.Components.Build;
+using PipServices3.Commons.Errors;
+using PipServices3.Components.Log;
+using PipServices3.Commons.Refer;
+using PipServices3.Commons.Run;
+using PipServices3.Components.Info;
+using PipServices3.Container.Refer;
 
-namespace PipServices.Azure.Run
+namespace PipServices3.Azure.Run
 {
     /// <summary>
     /// Class MicroserviceProcessContainer.

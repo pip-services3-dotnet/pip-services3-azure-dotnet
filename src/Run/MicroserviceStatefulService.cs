@@ -1,10 +1,10 @@
 ﻿using System.Fabric;
 using Microsoft.ServiceFabric.Services.Runtime;
-using PipServices.Commons.Config;
-using PipServices.Components.Log;
-using PipServices.Commons.Refer;
+using PipServices3.Commons.Config;
+using PipServices3.Components.Log;
+using PipServices3.Commons.Refer;
 
-namespace PipServices.Azure.Run
+namespace PipServices3.Azure.Run
 {
     public abstract class MicroserviceStatefulService<TC> : StatefulService, IReferenceable, IReconfigurable
         where TC : class

@@ -1,13 +1,13 @@
 ﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using PipServices.Components.Auth;
-using PipServices.Components.Connect;
+using PipServices3.Components.Auth;
+using PipServices3.Components.Connect;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 
-namespace PipServices.Azure.Auth
+namespace PipServices3.Azure.Auth
 {
     public class KeyVaultClient
     {
