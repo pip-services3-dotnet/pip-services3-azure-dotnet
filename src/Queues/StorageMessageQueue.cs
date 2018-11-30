@@ -22,7 +22,12 @@ namespace PipServices3.Azure.Queues
         private CloudQueue _deadQueue;
         private CancellationTokenSource _cancel = new CancellationTokenSource();
 
-        public StorageMessageQueue(string name = null)
+        public StorageMessageQueue()
+            : this (null)
+        {
+        }
+
+        public StorageMessageQueue(string name)
         {
             Name = name;
             Capabilities = new MessagingCapabilities(true, true, true, true, true, false, true, true, true);
