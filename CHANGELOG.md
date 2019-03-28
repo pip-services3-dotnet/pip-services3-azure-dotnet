@@ -1,6 +1,6 @@
 # Azure specific components for Pip.Services in .NET Changelog
 
-## <a name="3.0.0-3.0.4"></a> 3.0.0-3.0.4 (2018-12-05)
+## <a name="3.0.0-3.0.5"></a> 3.0.0-3.0.5 (2019-03-28)
 
 ### Breaking Changed
 * Updated dependencies to version 3.0

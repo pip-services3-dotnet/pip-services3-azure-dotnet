@@ -68,23 +68,32 @@ namespace PipServices3.Azure.Queues
 
         public async override Task OpenAsync(string correlationId, ConnectionParams connection, CredentialParams credential)
         {
-            var connectionString = ConfigParams.FromTuples(
-                "DefaultEndpointsProtocol", connection.Protocol ?? connection.GetAsNullableString("DefaultEndpointsProtocol") ?? "https",
-                "AccountName", credential.AccessId ?? credential.GetAsNullableString("account_name") ?? credential.GetAsNullableString("AccountName"),
-                "AccountKey", credential.AccessKey ?? credential.GetAsNullableString("account_key") ??credential.GetAsNullableString("AccountKey")
-            ).ToString();
+            try
+            {
+                var connectionString = ConfigParams.FromTuples(
+                    "DefaultEndpointsProtocol", connection.Protocol ?? connection.GetAsNullableString("DefaultEndpointsProtocol") ?? "https",
+                    "AccountName", credential.AccessId ?? credential.GetAsNullableString("account_name") ?? credential.GetAsNullableString("AccountName"),
+                    "AccountKey", credential.AccessKey ?? credential.GetAsNullableString("account_key") ?? credential.GetAsNullableString("AccountKey")
+                ).ToString();
 
-            _logger.Info(null, "Connecting queue {0} to {1}", Name, connectionString);
+                _logger.Info(null, "Connecting queue {0} to {1}", Name, connectionString);
 
-            var storageAccount = CloudStorageAccount.Parse(connectionString);
-            var client = storageAccount.CreateCloudQueueClient();
+                var storageAccount = CloudStorageAccount.Parse(connectionString);
+                var client = storageAccount.CreateCloudQueueClient();
 
-            var queueName = connection.Get("queue") ?? Name;
-            _queue = client.GetQueueReference(queueName);
-            await _queue.CreateIfNotExistsAsync();
+                var queueName = connection.Get("queue") ?? Name;
+                _queue = client.GetQueueReference(queueName);
+                await _queue.CreateIfNotExistsAsync();
 
-            var deadName = connection.Get("dead");
-            _deadQueue = deadName != null ? client.GetQueueReference(deadName) : null;
+                var deadName = connection.Get("dead");
+                _deadQueue = deadName != null ? client.GetQueueReference(deadName) : null;
+
+            }
+            catch (Exception ex)
+            {
+                _queue = null;
+                _logger.Error(correlationId, ex, $"Failed to open queue {Name}.");
+            }
 
             await Task.Delay(0);
         }
