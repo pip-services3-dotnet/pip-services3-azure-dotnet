@@ -1,11 +1,15 @@
-﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using PipServices3.Components.Auth;
+﻿using PipServices3.Components.Auth;
 using PipServices3.Components.Connect;
+
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+
 using Microsoft.Azure.KeyVault;
+using Microsoft.Rest.Azure;
+using Microsoft.Azure.KeyVault.Models;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace PipServices3.Azure.Auth
 {
@@ -43,14 +47,30 @@ namespace PipServices3.Azure.Auth
 
         public async Task<List<string>> GetSecretNamesAsync()
         {
-            var message = await _client.GetSecretsAsync(_keyVault, null);
+            var page = await _client.GetSecretsAsync(_keyVault);
             var result = new List<string>();
 
-            //ToDo
-            //foreach (var item in message.Value)
-            //{
-            //    result.Add(item.Identifier.Name);
-            //}
+            while (page != null)
+            {
+                Task<IPage<SecretItem>> nextPageTask = null;
+
+                if (!string.IsNullOrWhiteSpace(page.NextPageLink))
+                {
+                    nextPageTask = _client.GetSecretsNextAsync(page.NextPageLink);
+                }
+
+                foreach (var item in page)
+                {
+                    result.Add(item.Identifier.Name);
+                }
+
+                if (nextPageTask == null)
+                {
+                    break;
+                }
+
+                page = await nextPageTask;
+            }
 
             return result;
         }
@@ -58,7 +78,17 @@ namespace PipServices3.Azure.Auth
         public async Task<string> GetSecretValueAsync(string secretName)
         {
             var message = await _client.GetSecretAsync(_keyVault + "/secrets/" + secretName);
-            return message.Value;
+            return message?.Value;
+        }
+
+        public async Task SetSecretValueAsync(string secretName, string secretValue)
+        {
+            await _client.SetSecretAsync(_keyVault, secretName, secretValue);
+        }
+
+        public async Task DeleteSecretAsync(string secretName)
+        {
+            await _client.DeleteSecretAsync(_keyVault, secretName);
         }
 
         public async Task<Dictionary<string, string>> GetSecretsAsync()

@@ -1,6 +1,9 @@
 # Azure specific components for Pip.Services in .NET Changelog
 
-## <a name="3.0.0-3.0.5"></a> 3.0.0-3.0.5 (2019-03-28)
+## <a name="3.0.0-3.0.6"></a> 3.0.0-3.0.6 (2019-04-16)
+
+### Features
+* **auth** Extended KeyVault client
 
 ### Breaking Changed
 * Updated dependencies to version 3.0
