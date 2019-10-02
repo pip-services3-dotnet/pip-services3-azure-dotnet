@@ -6,13 +6,13 @@
     <AssemblyName>PipServices3.Azure</AssemblyName>
     <ApplicationIcon />
     <Win32Resource />
-    <Version>3.0.6</Version>
+    <Version>3.0.7</Version>
     <Authors>Sergey Seroukhov, Alex Mazur</Authors>
     <Copyright>Conceptual Vision Consulting LLC. 2017-2018</Copyright>
     <Description>Azure components for Pip.Services in .NET</Description>
     <Company>Conceptual Vision Consulting LLC.</Company>
     <Product>PipServices3.Azure</Product>
-    <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/pip-services3-dotnet/pip-services3-azure-dotnet</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/pip-services/pip-services/master/design/Icon.png</PackageIconUrl>
     <PackageTags>PipServices V3 microservices toolkit</PackageTags>
@@ -22,14 +22,17 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.0.2" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.1.2" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.8" />
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.2.162" />
-    <PackageReference Include="WindowsAzure.Storage" Version="9.3.0" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.7.1" />
-    <PackageReference Include="PipServices3.Commons" Version="3.0.6" />
-    <PackageReference Include="PipServices3.Components" Version="3.0.4" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.0" />
+    <PackageReference Include="PipServices3.MongoDb" Version="3.0.5" />
+    <PackageReference Include="PipServices3.Commons" Version="3.0.13" />
+    <PackageReference Include="PipServices3.Components" Version="3.0.6" />
     <PackageReference Include="PipServices3.Container" Version="3.0.3" />
     <PackageReference Include="PipServices3.Messaging" Version="3.0.2" />
+    <PackageReference Include="System.Net.Http.Formatting.Extension" Version="5.2.3" />
   </ItemGroup>
 
 </Project>

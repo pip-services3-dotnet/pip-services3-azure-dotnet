@@ -18,7 +18,6 @@ namespace PipServices3.Azure.Run
     public class MicroserviceProcessContainer : Container.Container
     {
         private string _correlationId;
-        private IFactory _factory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MicroserviceProcessContainer"/> class.
