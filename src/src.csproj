@@ -6,9 +6,9 @@
     <AssemblyName>PipServices3.Azure</AssemblyName>
     <ApplicationIcon />
     <Win32Resource />
-    <Version>3.0.8</Version>
+    <Version>3.0.10</Version>
     <Authors>Sergey Seroukhov, Alex Mazur</Authors>
-    <Copyright>Conceptual Vision Consulting LLC. 2017-2018</Copyright>
+    <Copyright>Conceptual Vision Consulting LLC. 2017-2019</Copyright>
     <Description>Azure components for Pip.Services in .NET</Description>
     <Company>Conceptual Vision Consulting LLC.</Company>
     <Product>PipServices3.Azure</Product>

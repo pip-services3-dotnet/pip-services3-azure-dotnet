@@ -36,14 +36,27 @@ namespace PipServices3.Azure.Metrics
 
         public void SetReferences(IReferences references)
         {
-            ClientCredentials = new CosmosDbClientCredentials(ClientId, ClientSecret, TenantId);
-            ServiceClient = new CosmosDbServiceClient(ClientCredentials);
+            try
+            {
+                ClientCredentials = new CosmosDbClientCredentials(ClientId, ClientSecret, TenantId);
+                ServiceClient = new CosmosDbServiceClient(ClientCredentials);
 
-            _logger.SetReferences(references);
+                _logger.SetReferences(references);
+            }
+            catch (Exception exception)
+            {
+                ServiceClient = null;
+                _logger.Error(string.Empty, exception, $"SetReferences: Failed to initialize cosmos db metrics service.");
+            }
         }
 
         public string GetResourceUri(string correlationId, string resourceGroupName, string accountName, string accessKey, string databaseName, string collectionName)
         {
+            if (ServiceClient == null)
+            {
+                return string.Empty;
+            }
+
             try
             {
                 var (databaseResourceId, collectionResourceId) = ServiceClient.GetResourceIDs(accountName, accessKey, databaseName, collectionName);
@@ -59,6 +72,11 @@ namespace PipServices3.Azure.Metrics
 
         public async Task<IEnumerable<Metric>> GetResourceMetricsAsync(string correlationId, string resourceUri, Action<QueryBuilder> queryBuilderDelegate)
         {
+            if (ServiceClient == null)
+            {
+                return null;
+            }
+
             try
             {
                 var jsonMetrics = await ServiceClient.GetMetricsAsync(resourceUri, ApiVersion, 
@@ -76,12 +94,21 @@ namespace PipServices3.Azure.Metrics
 
         private string ExtractClientSecret(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            try
             {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return string.Empty;
+                }
+
+                return Encoding.UTF8.GetString(Convert.FromBase64String(value));
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(string.Empty, exception, $"ExtractClientSecret: Failed to extract client secret '{value}'.");
+
                 return string.Empty;
             }
-
-            return Encoding.UTF8.GetString(Convert.FromBase64String(value));
         }
     }
 }
