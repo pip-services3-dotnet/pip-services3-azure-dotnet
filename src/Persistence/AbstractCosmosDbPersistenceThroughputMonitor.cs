@@ -59,8 +59,8 @@ namespace PipServices3.Azure.Persistence
 
         public virtual void SetReferences(IReferences references)
         {
-            _metricsService = references.GetOneRequired<ICosmosDbMetricsService>(new Descriptor("pip-services", "metrics-service", "*", "*", "*"));
-            _lock = references.GetOneRequired<ILock>(new Descriptor("pip-services", "lock", "*", "*", "*"));
+            _metricsService = references.GetOneRequired<ICosmosDbMetricsService>(new Descriptor("pip-services3", "metrics-service", "*", "*", "*"));
+            _lock = references.GetOneRequired<ILock>(new Descriptor("pip-services3", "lock", "*", "*", "*"));
 
             _logger.SetReferences(references);
         }
