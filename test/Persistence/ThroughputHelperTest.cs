@@ -5,35 +5,37 @@ namespace PipServices3.Azure.Persistence
     public class ThroughputHelperTest
     {
         [Theory]
-        [InlineData(0, 0, CosmosDbThroughputHelper.MinimumThroughput)]
-        [InlineData(0, -1, CosmosDbThroughputHelper.MinimumThroughput)]
-        [InlineData(-1, 0, CosmosDbThroughputHelper.MinimumThroughput)]
-        [InlineData(-1, -1, CosmosDbThroughputHelper.MinimumThroughput)]
-        [InlineData(1, 100, CosmosDbThroughputHelper.MinimumThroughput + CosmosDbThroughputHelper.BufferThroughput)]
+        [InlineData(0, 0, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput)]
+        [InlineData(0, -1, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput)]
+        [InlineData(-1, 0, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput)]
+        [InlineData(-1, -1, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput)]
+        [InlineData(1, 100, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput + CosmosDbThroughputHelper.BufferThroughput)]
         public void It_Should_Recommend_Minimum_Throughput_Value(int partitionCount, double maximumRequestUnitValue, int expectedThroughput)
         {
             // act
-            var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue);
+            var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue,
+                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput);
 
             // assert
             Assert.Equal(expectedThroughput, result);
         }
 
         [Theory]
-        [InlineData(1, CosmosDbThroughputHelper.MaximumThroughput + 1, CosmosDbThroughputHelper.MaximumThroughput)]
-        [InlineData(100, CosmosDbThroughputHelper.MaximumThroughput + 1, CosmosDbThroughputHelper.MaximumThroughput)]
+        [InlineData(1, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput + 1, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput)]
+        [InlineData(100, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput + 1, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput)]
         public void It_Should_Recommend_Maximum_Throughput_Value(int partitionCount, double maximumRequestUnitValue, int expectedThroughput)
         {
             // act
-            var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue);
+            var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue,
+                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput);
 
             // assert
             Assert.Equal(expectedThroughput, result);
         }
 
         [Theory]
-        [InlineData(1, 0, CosmosDbThroughputHelper.MinimumThroughput + CosmosDbThroughputHelper.BufferThroughput)]
-        [InlineData(1, 101, CosmosDbThroughputHelper.MinimumThroughput + CosmosDbThroughputHelper.BufferThroughput)]
+        [InlineData(1, 0, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput + CosmosDbThroughputHelper.BufferThroughput)]
+        [InlineData(1, 101, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput + CosmosDbThroughputHelper.BufferThroughput)]
         [InlineData(1, 400, 500)]  // (1 * 400) = 400  + 100 = 500
         [InlineData(1, 420, 600)]  // (1 * 500) = 500  + 100 = 600
         [InlineData(2, 0, 900)]    // (2 * 400) = 800  + 100 = 900
@@ -50,11 +52,11 @@ namespace PipServices3.Azure.Persistence
         public void It_Should_Recommend_Correct_Throughput_Value(int partitionCount, double maximumRequestUnitValue, int expectedThroughput)
         {
             // act
-            var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue);
+            var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue,
+                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput);
 
             // assert
             Assert.Equal(expectedThroughput, result);
         }
     }
-
 }

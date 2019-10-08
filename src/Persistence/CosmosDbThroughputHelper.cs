@@ -6,33 +6,31 @@ namespace PipServices3.Azure.Persistence
 {
     public static class CosmosDbThroughputHelper
     {
-        public const int MinimumThroughput = 400;
-        public const int MaximumThroughput = 200000;
         public const int BufferThroughput = 100;
 
-        public static int GetRecommendedThroughput(int partitionCount, double maximumRequestUnitValue)
+        public static int GetRecommendedThroughput(int partitionCount, double maximumRequestUnitValue, int minimumThroughput, int maximumThroughput)
         {
             if (partitionCount <= 0)
             {
-                return MinimumThroughput;
+                return minimumThroughput;
             }
 
-            if (maximumRequestUnitValue <= MinimumThroughput)
+            if (maximumRequestUnitValue <= minimumThroughput)
             {
-                maximumRequestUnitValue = MinimumThroughput;
+                maximumRequestUnitValue = minimumThroughput;
             }
 
             var result = Math.Ceiling(maximumRequestUnitValue / 100) * 100;
 
             result = result * partitionCount + BufferThroughput;
 
-            if (result <= MinimumThroughput)
+            if (result <= minimumThroughput)
             {
-                return MinimumThroughput;
+                return minimumThroughput;
             }
-            else if (result >= MaximumThroughput)
+            else if (result >= maximumThroughput)
             {
-                return MaximumThroughput;
+                return maximumThroughput;
             }
 
             return IntegerConverter.ToInteger(result);

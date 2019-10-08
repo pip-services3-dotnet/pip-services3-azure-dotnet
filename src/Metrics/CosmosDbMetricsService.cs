@@ -28,7 +28,7 @@ namespace PipServices3.Azure.Metrics
         public void Configure(ConfigParams config)
         {
             ClientId = config.GetAsString("credential.client_id");
-            ClientSecret = ExtractClientSecret(config.GetAsString("credential.client_secret"));
+            ClientSecret = config.GetAsString("credential.client_secret");
             SubscriptionId = config.GetAsString("credential.subscription_id");
             TenantId = config.GetAsString("credential.tenant_id");
             ApiVersion = config.GetAsString("credential.api_version");
@@ -38,15 +38,17 @@ namespace PipServices3.Azure.Metrics
         {
             try
             {
+                _logger.SetReferences(references);
+
+                ClientSecret = ExtractClientSecret(ClientSecret);
+
                 ClientCredentials = new CosmosDbClientCredentials(ClientId, ClientSecret, TenantId);
                 ServiceClient = new CosmosDbServiceClient(ClientCredentials);
-
-                _logger.SetReferences(references);
             }
             catch (Exception exception)
             {
                 ServiceClient = null;
-                _logger.Error(string.Empty, exception, $"SetReferences: Failed to initialize cosmos db metrics service.");
+                _logger.Error("CosmosDbMetricsService", exception, $"SetReferences: Failed to initialize cosmos db metrics service.");
             }
         }
 
@@ -94,21 +96,12 @@ namespace PipServices3.Azure.Metrics
 
         private string ExtractClientSecret(string value)
         {
-            try
+            if (string.IsNullOrWhiteSpace(value))
             {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    return string.Empty;
-                }
-
-                return Encoding.UTF8.GetString(Convert.FromBase64String(value));
-            }
-            catch (Exception exception)
-            {
-                _logger.Error(string.Empty, exception, $"ExtractClientSecret: Failed to extract client secret '{value}'.");
-
                 return string.Empty;
             }
+
+            return Encoding.UTF8.GetString(Convert.FromBase64String(value));
         }
     }
 }
