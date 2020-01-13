@@ -1,6 +1,6 @@
 # Azure specific components for Pip.Services in .NET Changelog
 
-## <a name="3.0.0-3.0.11"></a> 3.0.0-3.0.11 (2019-10-08)
+## <a name="3.0.0-3.0.12"></a> 3.0.0-3.0.12 (2020-01-13)
 
 ### Features
 * **lock** Add CloudStorageLock
@@ -10,6 +10,7 @@
 
 ### Breaking Changed
 * Updated dependencies to version 3.0
+* Added 'pip-services' descriptors
 
 ## <a name="2.1.0"></a> 2.1.0 (2017-05-17)
 
