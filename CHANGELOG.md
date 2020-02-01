@@ -10,6 +10,7 @@
 
 ### Breaking Changed
 * Updated dependencies to version 3.0
+* Added 'pip-services' descriptors
 
 ## <a name="2.1.0"></a> 2.1.0 (2017-05-17)
 
