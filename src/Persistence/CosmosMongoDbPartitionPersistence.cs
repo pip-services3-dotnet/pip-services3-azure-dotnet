@@ -196,7 +196,7 @@ namespace PipServices3.Azure.Persistence
         {
             _cosmosDbRestClient = new CosmosDbRestClient()
             {
-                MongoClient = _client,
+                MongoClient = _connection?.GetConnection(),
                 CollectionName = _collectionName,
                 PartitionKey = _partitionKey,
                 Logger = _logger
