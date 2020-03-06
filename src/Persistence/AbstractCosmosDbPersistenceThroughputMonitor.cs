@@ -19,6 +19,7 @@ namespace PipServices3.Azure.Persistence
     {
         public const int DefaultMinimumThroughput = 400;
         public const int DefaultMaximumThroughput = 100000;
+        public const double DefaultGrowthRate = 1.0;
 
         protected abstract string CorrelationId { get; }
 
@@ -37,13 +38,14 @@ namespace PipServices3.Azure.Persistence
 
         protected int MinimumThroughput { get; set; }
         protected int MaximumThroughput { get; set; }
+        protected double GrowthRate { get; set; }
 
         protected string ConnectionUri { get; set; }
         protected string ResourceGroup { get; set; }
         protected string AccountName { get; set; }
         protected string AccessKey { get; set; }
         protected string DatabaseName { get; set; }
-        protected abstract string[] CollectionNames { get; } 
+        protected abstract string[] CollectionNames { get; }
         protected string InternalCollectionNames => string.Join(",", CollectionNames);
 
         public virtual void Configure(ConfigParams config)
@@ -54,6 +56,7 @@ namespace PipServices3.Azure.Persistence
 
             MinimumThroughput = config.GetAsNullableInteger("parameters.minimum_throughput") ?? DefaultMinimumThroughput;
             MaximumThroughput = config.GetAsNullableInteger("parameters.maximum_throughput") ?? DefaultMaximumThroughput;
+            GrowthRate = config.GetAsNullableDouble("parameters.growth_rate") ?? DefaultGrowthRate;
 
             ResourceGroup = config.GetAsString("parameters.resource_group");
             ConnectionUri = config.GetAsString("parameters.connection_uri");
@@ -170,8 +173,8 @@ namespace PipServices3.Azure.Persistence
                 maximumRequestUnitValue = Math.Max(maximumRequestUnitValue, metric.MetricValues.Max(metricValue => metricValue.Maximum) ?? 0);
             }
 
-            var recommendedThroughput = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue, MinimumThroughput, MaximumThroughput);
-            _logger.Info(correlationId, $"PerformUpdateThroughputAsync: Recommended throughput: '{recommendedThroughput}' for collection '{collectionName}' based on '{groupedMetrics.Key}': '{maximumRequestUnitValue}' with partition count: '{partitionCount}'.");
+            var recommendedThroughput = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue, MinimumThroughput, MaximumThroughput, GrowthRate);
+            _logger.Info(correlationId, $"PerformUpdateThroughputAsync: Recommended throughput: '{recommendedThroughput}' for collection '{collectionName}' based on '{groupedMetrics.Key}': '{maximumRequestUnitValue}' with partition count: '{partitionCount}' and a growth rate of '{GrowthRate}'┬.");
 
             // 3. Perform updating throughput of CosmosDB collection by recommended value
             await PerformUpdateThroughputAsync(correlationId, collectionName, recommendedThroughput);
