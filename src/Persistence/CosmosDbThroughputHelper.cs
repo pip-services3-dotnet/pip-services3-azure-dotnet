@@ -8,7 +8,7 @@ namespace PipServices3.Azure.Persistence
     {
         public const int BufferThroughput = 100;
 
-        public static int GetRecommendedThroughput(int partitionCount, double maximumRequestUnitValue, int minimumThroughput, int maximumThroughput)
+        public static int GetRecommendedThroughput(int partitionCount, double maximumRequestUnitValue, int minimumThroughput, int maximumThroughput, double growthRate)
         {
             if (partitionCount <= 0)
             {
@@ -18,9 +18,15 @@ namespace PipServices3.Azure.Persistence
             if (maximumRequestUnitValue <= minimumThroughput)
             {
                 maximumRequestUnitValue = minimumThroughput;
+                growthRate = 1.0;
             }
 
-            var result = Math.Ceiling(maximumRequestUnitValue / 100) * 100;
+            if (growthRate <= 0)
+            {
+                growthRate = 1.0;
+            }
+
+            var result = Math.Ceiling(maximumRequestUnitValue / 100 * growthRate) * 100;
 
             result = result * partitionCount + BufferThroughput;
 

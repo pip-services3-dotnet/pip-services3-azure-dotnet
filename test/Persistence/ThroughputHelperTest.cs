@@ -14,7 +14,7 @@ namespace PipServices3.Azure.Persistence
         {
             // act
             var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue,
-                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput);
+                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultGrowthRate);
 
             // assert
             Assert.Equal(expectedThroughput, result);
@@ -27,7 +27,7 @@ namespace PipServices3.Azure.Persistence
         {
             // act
             var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue,
-                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput);
+                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultGrowthRate);
 
             // assert
             Assert.Equal(expectedThroughput, result);
@@ -53,7 +53,24 @@ namespace PipServices3.Azure.Persistence
         {
             // act
             var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue,
-                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput);
+                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultGrowthRate);
+
+            // assert
+            Assert.Equal(expectedThroughput, result);
+        }
+
+        [Theory]
+        [InlineData(1, 5000, 1.5, 7600)]        // (1 * 5000) = 5000 * 1.5 = 2500 + 100 = 7600
+        [InlineData(1, 100, 1.5, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput + CosmosDbThroughputHelper.BufferThroughput)]
+        [InlineData(2, 5000, 1.5, 15100)]       // (2 * 5000) = 10000 * 1.5 = 5000 + 100 = 15100
+        [InlineData(5, 5000, 1.5, 37600)]       // (5 * 5000) = 25000 * 1.5 = 37500 + 100 = 37600
+        [InlineData(10, 5000, 1.5, 75100)]
+        [InlineData(10, 10000, 1.5, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput)]
+        public void It_Should_Recommend_Correct_Throughput_Value_For_Growth_Rate(int partitionCount, double maximumRequestUnitValue, double growthRate, int expectedThroughput)
+        {
+            // act
+            var result = CosmosDbThroughputHelper.GetRecommendedThroughput(partitionCount, maximumRequestUnitValue,
+                AbstractCosmosDbPersistenceThroughputMonitor.DefaultMinimumThroughput, AbstractCosmosDbPersistenceThroughputMonitor.DefaultMaximumThroughput, growthRate);
 
             // assert
             Assert.Equal(expectedThroughput, result);
