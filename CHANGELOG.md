@@ -1,8 +1,9 @@
 # Azure specific components for Pip.Services in .NET Changelog
 
-## <a name="3.0.0-3.0.14"></a> 3.0.0-3.0.14 (2020-03-06)
+## <a name="3.0.0-3.0.15"></a> 3.0.0-3.0.15 (2020-03-20)
 
 ### Features
+* **queues** Add ServiceBusMessageTopic and ServiceBusMessageQueue
 * **lock** Add CloudStorageLock
 * **metrics** Add CosmosDbMetricsService
 * **persistence** Add CosmosMongoDbPartitionPersistence

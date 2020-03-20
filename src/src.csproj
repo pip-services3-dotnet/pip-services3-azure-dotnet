@@ -6,7 +6,7 @@
     <AssemblyName>PipServices3.Azure</AssemblyName>
     <ApplicationIcon />
     <Win32Resource />
-    <Version>3.0.14</Version>
+    <Version>3.0.15</Version>
     <Authors>Sergey Seroukhov, Alex Mazur</Authors>
     <Copyright>Conceptual Vision Consulting LLC. 2017-2020</Copyright>
     <Description>Azure components for Pip.Services in .NET</Description>
@@ -21,17 +21,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.0.2" />
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.2" />
     <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.1.2" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.8" />
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.2.162" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.7.1" />
+    <PackageReference Include="Mossharbor.AzureWorkArounds.ServiceBus" Version="1.0.20" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.0" />
     <PackageReference Include="PipServices3.MongoDb" Version="3.1.1" />
-    <PackageReference Include="PipServices3.Commons" Version="3.0.16" />
-    <PackageReference Include="PipServices3.Components" Version="3.0.6" />
+    <PackageReference Include="PipServices3.Commons" Version="3.0.17" />
+    <PackageReference Include="PipServices3.Components" Version="3.0.7" />
     <PackageReference Include="PipServices3.Container" Version="3.0.3" />
-    <PackageReference Include="PipServices3.Messaging" Version="3.0.2" />
+    <PackageReference Include="PipServices3.Messaging" Version="3.0.3" />
     <PackageReference Include="System.Net.Http.Formatting.Extension" Version="5.2.3" />
   </ItemGroup>
 
