@@ -14,7 +14,7 @@
     <Product>PipServices3.Azure</Product>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/pip-services3-dotnet/pip-services3-azure-dotnet</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/pip-services/pip-services/master/design/Icon.png</PackageIconUrl>
+    <PackageIcon>https://raw.githubusercontent.com/pip-services/pip-services/master/design/Icon.png</PackageIcon>
     <PackageTags>PipServices V3 microservices toolkit</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
