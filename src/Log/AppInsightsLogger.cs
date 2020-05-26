@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
+
 using PipServices3.Commons.Config;
 using PipServices3.Components.Log;
-using PipServices3.Commons.Refer;
 using PipServices3.Components.Auth;
-using PipServices3.Commons.Convert;
-using System.Text;
 
 namespace PipServices3.Azure.Log
 {
@@ -65,48 +64,44 @@ namespace PipServices3.Azure.Log
 
         protected override void Write(LogLevel level, string correlationId, Exception error, string message)
         {
-            if (_client == null) Open();
-
-            if (Level < level) return;
-
-            var build = new StringBuilder();
-            build.Append('[');
-            build.Append(correlationId != null ? correlationId : "---");
-            build.Append(':');
-            build.Append(level.ToString());
-            build.Append(':');
-            build.Append(StringConverter.ToString(DateTime.UtcNow));
-            build.Append("] ");
-
-            build.Append(message);
-
-            if (error != null)
+            if (_client == null)
             {
-                if (message.Length == 0)
-                    build.Append("Error: ");
-                else
-                    build.Append(": ");
-
-                build.Append(ComposeError(error));
+                Open();
             }
 
-            var output = build.ToString();
+            if (Level < level)
+            {
+                return;
+            }
 
             if (correlationId != null)
             {
-                var props = new Dictionary<string, string> { { "CorrelationId", correlationId } };
-
                 if (error != null)
-                    _client.TrackException(error, props);
+                {
+                    _client.TrackException(error, new Dictionary<string, string>
+                    {
+                        { "CorrelationId", correlationId },
+                        { "message", message }
+                    });
+                }
                 else
-                    _client.TrackTrace(message, LevelToSeverity(level), props);
+                {
+                    _client.TrackTrace(message, LevelToSeverity(level), new Dictionary<string, string>
+                    {
+                        { "CorrelationId", correlationId }
+                    });
+                }
             }
             else
             {
                 if (error != null)
+                {
                     _client.TrackException(error);
+                }
                 else
+                {
                     _client.TrackTrace(message, LevelToSeverity(level));
+                }
             }
         }
 
