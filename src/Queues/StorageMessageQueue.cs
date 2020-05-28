@@ -1,5 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Queue;
+﻿using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.Queue;
 using PipServices3.Components.Auth;
 using PipServices3.Commons.Config;
 using PipServices3.Components.Connect;

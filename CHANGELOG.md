@@ -1,5 +1,10 @@
 # Azure specific components for Pip.Services in .NET Changelog
 
+## <a name="3.1.0"></a> 3.1.0 (2020-05-26)
+
+### Breaking Changes
+* Migrated to .NET Core 3.1
+
 ## <a name="3.0.0-3.0.15"></a> 3.0.0-3.0.15 (2020-03-20)
 
 ### Features

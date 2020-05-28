@@ -5,8 +5,7 @@ using PipServices3.Components.Log;
 
 using System;
 
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace PipServices3.Azure.Lock
 {
