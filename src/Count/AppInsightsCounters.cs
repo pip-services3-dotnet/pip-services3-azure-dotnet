@@ -1,9 +1,10 @@
 ﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+
 using PipServices3.Components.Auth;
 using PipServices3.Commons.Config;
 using PipServices3.Components.Count;
-using PipServices3.Commons.Refer;
+
 using System.Collections.Generic;
 
 namespace PipServices3.Azure.Count
@@ -25,14 +26,16 @@ namespace PipServices3.Azure.Count
         {
             var credential = _credentialResolver.LookupAsync("count").Result;
 
-            var key = credential.AccessKey 
+            var key = credential.AccessKey
                 ?? credential.GetAsNullableString("instrumentation_key")
                  ?? credential.GetAsNullableString("InstrumentationKey");
 
+            var config = TelemetryConfiguration.CreateDefault();
+            
             if (key != null)
-                TelemetryConfiguration.Active.InstrumentationKey = key;
+                config.InstrumentationKey = key;
 
-            _client = new TelemetryClient();
+            _client = new TelemetryClient(config);
         }
 
         protected override void Save(IEnumerable<Counter> counters)

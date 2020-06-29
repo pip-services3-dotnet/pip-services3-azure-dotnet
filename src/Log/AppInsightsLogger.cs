@@ -56,10 +56,12 @@ namespace PipServices3.Azure.Log
                 ?? credential.GetAsNullableString("instrumentation_key")
                 ?? credential.GetAsNullableString("InstrumentationKey");
 
-            if (key != null)
-                TelemetryConfiguration.Active.InstrumentationKey = key;
+            var config = TelemetryConfiguration.CreateDefault();
 
-            _client = new TelemetryClient();
+            if (key != null)
+                config.InstrumentationKey = key;
+
+            _client = new TelemetryClient(config);
         }
 
         protected override void Write(LogLevel level, string correlationId, Exception error, string message)

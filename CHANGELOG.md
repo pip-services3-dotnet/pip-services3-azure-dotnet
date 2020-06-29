@@ -1,9 +1,10 @@
 # Azure specific components for Pip.Services in .NET Changelog
 
-## <a name="3.1.2"></a> 3.1.2 (2020-06-26)
+## <a name="3.1.2-3.1.3"></a> 3.1.2-3.1.3 (2020-06-29)
 
 ### Features
 * Implemented support backward compatibility
+* Updated AppInsights telemetry configuration
 
 ## <a name="3.1.0-3.1.1"></a> 3.1.0-3.1.1 (2020-05-28)
 
