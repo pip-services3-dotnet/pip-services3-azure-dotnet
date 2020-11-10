@@ -1,5 +1,10 @@
 # Azure specific components for Pip.Services in .NET Changelog
 
+## <a name="3.1.4"></a> 3.1.4 (2020-11-10)
+
+### Features
+* Added IsLocked method to CloudStorageTableLock
+
 ## <a name="3.1.2-3.1.3"></a> 3.1.2-3.1.3 (2020-06-29)
 
 ### Features

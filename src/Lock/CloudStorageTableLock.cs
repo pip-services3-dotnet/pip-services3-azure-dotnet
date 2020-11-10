@@ -132,6 +132,40 @@ namespace PipServices3.Azure.Lock
             }
         }
 
+        public override bool IsLocked(string correlationId, string key)
+        {
+            try
+            {
+                if (_table == null)
+                {
+                    _logger.Error(correlationId, $"IsLocked: Lock storage table is not initialized.");
+                    return false;
+                }
+
+                var operation = TableOperation.Retrieve<TableLock>(correlationId, key);
+                var record = _table.ExecuteAsync(operation).Result;
+                var tableLock = record.Result as TableLock;
+
+                if (tableLock != null)
+                {
+                    if (tableLock.Expired > DateTime.UtcNow)
+                    {
+                        _logger.Trace(correlationId, $"IsLocked: Key = '{key}' has been already locked and not expired.");
+                        return true;
+                    }
+
+                    _logger.Trace(correlationId, $"IsLocked: Locked key = '{key}' expired.");
+                }
+
+                return false;
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(correlationId, exception, $"IsLocked: Failed to acquire lock for key = '{key}'.");
+                return false;
+            }
+        }
+
         public class TableLock : TableEntity
         {
             public DateTime Expired { get; set; }
