@@ -23,62 +23,62 @@ namespace PipServices3.Azure.Queues
             Fixture = new MessageQueueFixture(Queue);
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStorageSendReceiveMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestSendReceiveMessageAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStorageReceiveSendMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestReceiveSendMessageAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStorageReceiveAndCompleteAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestReceiveAndCompleteMessageAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStorageReceiveAndAbandonAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestReceiveAndAbandonMessageAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStorageSendPeekMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestSendPeekMessageAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStoragePeekNoMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestPeekNoMessageAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStorageOnMessageAsync()
         {
             await Queue.ClearAsync(null);
             await Fixture.TestOnMessageAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStorageMoveToDeadMessageAsync()
         {
             await Fixture.TestMoveToDeadMessageAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "Not valid credentials")]
         public async Task TestStorageMessageCountAsync()
         {
             await Fixture.TestMessageCountAsync();
