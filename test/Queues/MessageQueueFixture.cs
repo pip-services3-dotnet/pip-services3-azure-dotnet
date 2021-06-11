@@ -21,7 +21,7 @@ namespace PipServices3.Azure.Queues
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
             await _queue.SendAsync(null, envelope1);
 
-            var count = _queue.MessageCount;
+            var count = await _queue.ReadMessageCountAsync();
             Assert.True(count > 0);
 
             var envelope2 = await _queue.ReceiveAsync(null, 10000);
@@ -111,9 +111,8 @@ namespace PipServices3.Azure.Queues
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
             await _queue.SendAsync(null, envelope1);
             await Task.Delay(500);
-            var count = _queue.MessageCount;
-            Assert.NotNull(count);
-            //Assert.IsTrue(count > 0);
+            var count = await _queue.ReadMessageCountAsync();
+            Assert.True(count > 0);
         }
 
         public async Task TestPeekNoMessageAsync()

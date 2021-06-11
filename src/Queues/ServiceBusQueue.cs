@@ -6,6 +6,7 @@ using PipServices3.Messaging.Queues;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 
 using Mossharbor.AzureWorkArounds.ServiceBus;
+using IMessageReceiver = PipServices3.Messaging.Queues.IMessageReceiver;
 
 namespace PipServices3.Azure.Queues
 {
@@ -53,10 +55,16 @@ namespace PipServices3.Azure.Queues
             return _queueClient != null && _namespaceManager != null && _messageReceiver != null;
         }
 
-        public async override Task OpenAsync(string correlationId, ConnectionParams connection, CredentialParams credential)
+        public override async Task OpenAsync(string correlationId, List<ConnectionParams> connections, CredentialParams credential)
         {
             try
             {
+                var connection = connections?.FirstOrDefault();
+                if (connection == null)
+                {
+                    throw new ArgumentNullException(nameof(connections));
+                }
+                
                 _queueName = connection.GetAsNullableString("queue") ?? Name;
 
                 _connectionString = ConfigParams.FromTuples(
@@ -90,14 +98,11 @@ namespace PipServices3.Azure.Queues
             _logger.Trace(correlationId, "Closed queue {0}", this);
         }
 
-        public override long? MessageCount
+        public override async Task<long> ReadMessageCountAsync()
         {
-            get
-            {
-                CheckOpened(null);
-                var queueDescription = _namespaceManager.GetQueue(_queueName);
-                return queueDescription.MessageCount;
-            }
+            CheckOpened(null);
+            var queueDescription = _namespaceManager.GetQueue(_queueName);
+            return queueDescription.MessageCount;
         }
 
         private MessageEnvelope ToMessage(Message envelope, bool withLock = true)
@@ -117,7 +122,7 @@ namespace PipServices3.Azure.Queues
 
             try
             {
-                message.Message = Encoding.UTF8.GetString(envelope.Body);
+                message.Message = envelope.Body;
             }
             catch
             {
@@ -135,7 +140,7 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(correlationId);
 
-            var envelope = new Message(Encoding.UTF8.GetBytes(message.Message))
+            var envelope = new Message(message.Message)
             {
                 ContentType = message.MessageType,
                 CorrelationId = message.CorrelationId,
@@ -249,7 +254,7 @@ namespace PipServices3.Azure.Queues
             }
         }
 
-        public override async Task ListenAsync(string correlationId, Func<MessageEnvelope, IMessageQueue, Task> callback)
+        public override async Task ListenAsync(string correlationId, IMessageReceiver receiver)
         {
             CheckOpened(correlationId);
             _logger.Trace(correlationId, "Started listening messages at {0}", this);
@@ -266,7 +271,7 @@ namespace PipServices3.Azure.Queues
 
                     try
                     {
-                        await callback(message, this);
+                        await receiver.ReceiveMessageAsync(message, this);
                     }
                     catch (Exception ex)
                     {

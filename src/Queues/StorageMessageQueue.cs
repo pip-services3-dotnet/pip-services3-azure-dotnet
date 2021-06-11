@@ -8,6 +8,7 @@ using PipServices3.Commons.Errors;
 using PipServices3.Messaging.Queues;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,10 +67,16 @@ namespace PipServices3.Azure.Queues
             return _queue != null;
         }
 
-        public async override Task OpenAsync(string correlationId, ConnectionParams connection, CredentialParams credential)
+        public override async Task OpenAsync(string correlationId, List<ConnectionParams> connections, CredentialParams credential)
         {
             try
             {
+                var connection = connections?.FirstOrDefault();
+                if (connection == null)
+                {
+                    throw new ArgumentNullException(nameof(connections));
+                }
+
                 var connectionString = ConfigParams.FromTuples(
                     "DefaultEndpointsProtocol", connection.Protocol ?? connection.GetAsNullableString("DefaultEndpointsProtocol") ?? "https",
                     "AccountName", credential.AccessId ?? credential.GetAsNullableString("account_name") ?? credential.GetAsNullableString("AccountName"),
@@ -107,14 +114,11 @@ namespace PipServices3.Azure.Queues
             await Task.Delay(0);
         }
 
-        public override long? MessageCount
+        public override async Task<long> ReadMessageCountAsync()
         {
-            get
-            {
-                CheckOpened(null);
-                _queue.FetchAttributesAsync().Wait();
-                return _queue.ApproximateMessageCount;
-            }
+            CheckOpened(null);
+            _queue.FetchAttributesAsync().Wait();
+            return _queue.ApproximateMessageCount??0;
         }
 
         private MessageEnvelope ToMessage(CloudQueueMessage envelope)
@@ -138,7 +142,7 @@ namespace PipServices3.Azure.Queues
             {
                 message = new MessageEnvelope
                 {
-                    Message = envelope.AsString
+                    Message = envelope.AsBytes
                 };
             }
 
@@ -293,7 +297,7 @@ namespace PipServices3.Azure.Queues
             }
         }
 
-        public override async Task ListenAsync(string correlationId, Func<MessageEnvelope, IMessageQueue, Task> callback)
+        public override async Task ListenAsync(string correlationId, IMessageReceiver receiver)
         {
             CheckOpened(correlationId);
             _logger.Debug(correlationId, "Started listening messages at {0}", this);
@@ -314,7 +318,7 @@ namespace PipServices3.Azure.Queues
 
                     try
                     {
-                        await callback(message, this);
+                        await receiver.ReceiveMessageAsync(message, this);
                     }
                     catch (Exception ex)
                     {
