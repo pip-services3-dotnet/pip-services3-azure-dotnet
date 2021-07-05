@@ -189,7 +189,7 @@ namespace PipServices3.Azure.Queues
 
             try
             {
-                message.Message = envelope.Body;
+                message.MessageBuffer = envelope.Body;
             }
             catch
             {
@@ -206,7 +206,7 @@ namespace PipServices3.Azure.Queues
         public override async Task SendAsync(string correlationId, MessageEnvelope message)
         {
             CheckOpened(correlationId);
-            var envelope = new Message(message.Message)
+            var envelope = new Message(message.MessageBuffer)
             {
                 ContentType = message.MessageType,
                 CorrelationId = message.CorrelationId,

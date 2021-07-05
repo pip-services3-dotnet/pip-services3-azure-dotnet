@@ -142,7 +142,7 @@ namespace PipServices3.Azure.Queues
             {
                 message = new MessageEnvelope
                 {
-                    Message = envelope.AsBytes
+                    MessageBuffer = envelope.AsBytes
                 };
             }
 
