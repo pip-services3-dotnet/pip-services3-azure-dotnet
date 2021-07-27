@@ -117,16 +117,9 @@ namespace PipServices3.Azure.Queues
                 MessageType = envelope.ContentType,
                 CorrelationId = envelope.CorrelationId,
                 MessageId = envelope.MessageId,
-                SentTime = envelope.ScheduledEnqueueTimeUtc
+                SentTime = envelope.ScheduledEnqueueTimeUtc,
+                Message = envelope.Body,
             };
-
-            try
-            {
-                message.MessageBuffer = envelope.Body;
-            }
-            catch
-            {
-            }
 
             if (withLock)
             {
@@ -139,8 +132,8 @@ namespace PipServices3.Azure.Queues
         public override async Task SendAsync(string correlationId, MessageEnvelope message)
         {
             CheckOpened(correlationId);
-
-            var envelope = new Message(message.MessageBuffer)
+            
+            var envelope = new Message(message.Message)
             {
                 ContentType = message.MessageType,
                 CorrelationId = message.CorrelationId,
