@@ -44,7 +44,7 @@ namespace PipServices3.Azure.Queues
             if (config != null)
             {
                 Configure(config);
-                _backwardCompatibility = config.GetAsBooleanWithDefault("backward_compatibility", true);
+                
             }
         }
 
@@ -56,10 +56,10 @@ namespace PipServices3.Azure.Queues
 
         public long Interval { get; set; }
 
-        public override void Configure(ConfigParams config)
+        public sealed override void Configure(ConfigParams config)
         {
             base.Configure(config);
-
+            _backwardCompatibility = config.GetAsBooleanWithDefault("backward_compatibility", true);
             Interval = config.GetAsLongWithDefault("interval", Interval);
         }
 
@@ -161,10 +161,9 @@ namespace PipServices3.Azure.Queues
 
             if (oldMessage != null)
             {
-                if (!string.IsNullOrWhiteSpace(oldMessage.Message))
-                    message.SetMessageAsString(oldMessage.Message);
-                message.CorrelationId = oldMessage.CorrelationId ?? message.CorrelationId;
-                message.MessageType = oldMessage.MessageType ?? message.MessageType;
+                if (message.Message==null) message.SetMessageAsString(oldMessage.Message);
+                message.CorrelationId = message.CorrelationId ?? oldMessage.CorrelationId;
+                message.MessageType = message.MessageType ?? oldMessage.MessageType;
             }
 
             return message;
@@ -173,6 +172,15 @@ namespace PipServices3.Azure.Queues
         public override async Task SendAsync(string correlationId, MessageEnvelope message)
         {
             CheckOpened(correlationId);
+            var envelope = FromMessage(message);
+            await _queue.AddMessageAsync(envelope);
+
+            _counters.IncrementOne("queue." + Name + ".sent_messages");
+            _logger.Debug(message.CorrelationId, "Sent message {0} via {1}", message, this);
+        }
+
+        private CloudQueueMessage FromMessage(MessageEnvelope message)
+        {
             var oldMessage = new BackwardCompatibilityMessageEnvelope
             {
                 Message = message.GetMessageAsString(),
@@ -181,13 +189,10 @@ namespace PipServices3.Azure.Queues
                 MessageType = message.MessageType,
                 SentTime = message.SentTime
             };
-            var content = _backwardCompatibility? JsonConverter.ToJson(oldMessage):JsonConverter.ToJson(message);
+            var content = _backwardCompatibility ? JsonConverter.ToJson(oldMessage) : JsonConverter.ToJson(message);
 
             var envelope = new CloudQueueMessage(content);
-            await _queue.AddMessageAsync(envelope);
-
-            _counters.IncrementOne("queue." + Name + ".sent_messages");
-            _logger.Debug(message.CorrelationId, "Sent message {0} via {1}", message, this);
+            return envelope;
         }
 
         public override async Task<MessageEnvelope> PeekAsync(string correlationId)

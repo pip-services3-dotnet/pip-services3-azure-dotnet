@@ -7,24 +7,41 @@ using Xunit;
 
 namespace PipServices3.Azure.Queues
 {
-    public class MessageQueueFixture
+    public class MessageQueueFixtureBackwardCompatibility
     {
-        private IMessageQueue _queue;
+        private readonly IMessageQueue _queueOld;
+        private readonly IMessageQueue _queueNew;
 
-        public MessageQueueFixture(IMessageQueue queue)
+        public MessageQueueFixtureBackwardCompatibility(IMessageQueue queueOld, IMessageQueue queueNew)
         {
-            _queue = queue;
+            _queueOld = queueOld;
+            _queueNew = queueNew;
         }
 
         public async Task TestSendReceiveMessageAsync()
         {
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
-            await _queue.SendAsync(null, envelope1);
+            await _queueOld.SendAsync(null, envelope1);
 
-            var count = await _queue.ReadMessageCountAsync();
+            var count = await _queueOld.ReadMessageCountAsync();
             Assert.True(count > 0);
 
-            var envelope2 = await _queue.ReceiveAsync(null, 10000);
+            var envelope2 = await _queueNew.ReceiveAsync(null, 10000);
+            Assert.NotNull(envelope2);
+            Assert.Equal(envelope1.MessageType, envelope2.MessageType);
+            Assert.Equal(envelope1.Message, envelope2.Message);
+            Assert.Equal(envelope1.CorrelationId, envelope2.CorrelationId);
+        }
+
+        public async Task TestSendReceiveMessageNewAsync()
+        {
+            var envelope1 = new MessageEnvelope("123", "Test", "Test message");
+            await _queueNew.SendAsync(null, envelope1);
+
+            var count = await _queueNew.ReadMessageCountAsync();
+            Assert.True(count > 0);
+
+            var envelope2 = await _queueNew.ReceiveAsync(null, 10000);
             Assert.NotNull(envelope2);
             Assert.Equal(envelope1.MessageType, envelope2.MessageType);
             Assert.Equal(envelope1.Message, envelope2.Message);
@@ -34,15 +51,15 @@ namespace PipServices3.Azure.Queues
         public async Task TestMoveToDeadMessageAsync()
         {
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
-            await _queue.SendAsync(null, envelope1);
+            await _queueNew.SendAsync(null, envelope1);
 
-            var envelope2 = await _queue.ReceiveAsync(null, 10000);
+            var envelope2 = await _queueOld.ReceiveAsync(null, 20000);
             Assert.NotNull(envelope2);
             Assert.Equal(envelope1.MessageType, envelope2.MessageType);
             Assert.Equal(envelope1.Message, envelope2.Message);
             Assert.Equal(envelope1.CorrelationId, envelope2.CorrelationId);
 
-            await _queue.MoveToDeadLetterAsync(envelope2);
+            await _queueOld.MoveToDeadLetterAsync(envelope2);
         }
 
         public async Task TestReceiveSendMessageAsync()
@@ -51,10 +68,10 @@ namespace PipServices3.Azure.Queues
 
             ThreadPool.QueueUserWorkItem(async delegate {
                 Thread.Sleep(500);
-                await _queue.SendAsync(null, envelope1);
+                await _queueOld.SendAsync(null, envelope1);
             });
 
-            var envelope2 = await _queue.ReceiveAsync(null, 10000);
+            var envelope2 = await _queueNew.ReceiveAsync(null, 10000);
             Assert.NotNull(envelope2);
             Assert.Equal(envelope1.MessageType, envelope2.MessageType);
             Assert.Equal(envelope1.Message, envelope2.Message);
@@ -64,14 +81,14 @@ namespace PipServices3.Azure.Queues
         public async Task TestReceiveAndCompleteMessageAsync()
         {
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
-            await _queue.SendAsync(null, envelope1);
-            var envelope2 = await _queue.ReceiveAsync(null, 10000);
+            await _queueOld.SendAsync(null, envelope1);
+            var envelope2 = await _queueNew.ReceiveAsync(null, 10000);
             Assert.NotNull(envelope2);
             Assert.Equal(envelope1.MessageType, envelope2.MessageType);
             Assert.Equal(envelope1.Message, envelope2.Message);
             Assert.Equal(envelope1.CorrelationId, envelope2.CorrelationId);
 
-            await _queue.CompleteAsync(envelope2);
+            await _queueNew.CompleteAsync(envelope2);
             //envelope2 = await _queue.PeekAsync();
             //Assert.IsNull(envelope2);
         }
@@ -79,15 +96,15 @@ namespace PipServices3.Azure.Queues
         public async Task TestReceiveAndAbandonMessageAsync()
         {
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
-            await _queue.SendAsync(null, envelope1);
-            var envelope2 = await _queue.ReceiveAsync(null, 10000);
+            await _queueOld.SendAsync(null, envelope1);
+            var envelope2 = await _queueNew.ReceiveAsync(null, 10000);
             Assert.NotNull(envelope2);
             Assert.Equal(envelope1.MessageType, envelope2.MessageType);
             Assert.Equal(envelope1.Message, envelope2.Message);
             Assert.Equal(envelope1.CorrelationId, envelope2.CorrelationId);
 
-            await _queue.AbandonAsync(envelope2);
-            envelope2 = await _queue.ReceiveAsync(null, 10000);
+            await _queueNew.AbandonAsync(envelope2);
+            envelope2 = await _queueNew.ReceiveAsync(null, 10000);
             Assert.NotNull(envelope2);
             Assert.Equal(envelope1.MessageType, envelope2.MessageType);
             Assert.Equal(envelope1.Message, envelope2.Message);
@@ -97,9 +114,9 @@ namespace PipServices3.Azure.Queues
         public async Task TestSendPeekMessageAsync()
         {
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
-            await _queue.SendAsync(null, envelope1);
+            await _queueOld.SendAsync(null, envelope1);
             await Task.Delay(500);
-            var envelope2 = await _queue.PeekAsync(null);
+            var envelope2 = await _queueNew.PeekAsync(null);
             Assert.NotNull(envelope2);
             Assert.Equal(envelope1.MessageType, envelope2.MessageType);
             Assert.Equal(envelope1.Message, envelope2.Message);
@@ -109,15 +126,15 @@ namespace PipServices3.Azure.Queues
         public async Task TestMessageCountAsync()
         {
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
-            await _queue.SendAsync(null, envelope1);
+            await _queueOld.SendAsync(null, envelope1);
             await Task.Delay(500);
-            var count = await _queue.ReadMessageCountAsync();
+            var count = await _queueNew.ReadMessageCountAsync();
             Assert.True(count > 0);
         }
 
         public async Task TestPeekNoMessageAsync()
         {
-            var envelope = await _queue.PeekAsync(null);
+            var envelope = await _queueOld.PeekAsync(null);
             Assert.Null(envelope);
         }
 
@@ -126,12 +143,12 @@ namespace PipServices3.Azure.Queues
             var envelope1 = new MessageEnvelope("123", "Test", "Test message");
             MessageEnvelope envelope2 = null;
 
-            _queue.BeginListen(null, async (envelope, queue) => {
+            _queueOld.BeginListen(null, async (envelope, queue) => {
                 envelope2 = envelope;
                 await Task.Delay(0);
             });
 
-            await _queue.SendAsync(null, envelope1);
+            await _queueOld.SendAsync(null, envelope1);
             await Task.Delay(500);
 
             Assert.NotNull(envelope2);
@@ -139,7 +156,7 @@ namespace PipServices3.Azure.Queues
             Assert.Equal(envelope1.Message, envelope2.Message);
             Assert.Equal(envelope1.CorrelationId, envelope2.CorrelationId);
 
-            await _queue.CloseAsync(null);
+            await _queueOld.CloseAsync(null);
         }
 
     }

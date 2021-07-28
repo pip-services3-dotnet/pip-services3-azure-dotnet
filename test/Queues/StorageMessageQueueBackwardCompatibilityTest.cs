@@ -6,35 +6,47 @@ using Xunit;
 
 namespace PipServices3.Azure.Queues
 {
-    public class StorageMessageQueueTest
+    public class StorageMessageQueueBackwardCompatibilityTest
     {
-        StorageMessageQueue Queue { get; set; }
-        MessageQueueFixture Fixture { get; set; }
+        private StorageMessageQueue QueueOld { get; set; }
+        private StorageMessageQueue QueueNew { get; set; }
+        MessageQueueFixtureBackwardCompatibility Fixture { get; set; }
 
-        public StorageMessageQueueTest()
+        public StorageMessageQueueBackwardCompatibilityTest()
         {
             var config = YamlConfigReader.ReadConfig(null, "..\\..\\..\\..\\config\\test_connections.yaml", null);
             var connection = ConnectionParams.FromString(config.GetAsString("storage_queue"));
-            Queue = new StorageMessageQueue("TestQueue", connection) {Interval = 50};
-            //Queue.SetReferences(new MockReferences());
-            Queue.OpenAsync(null).Wait();
+            QueueOld = new StorageMessageQueue("TestQueue", connection) {Interval = 50};
+            QueueOld.OpenAsync(null).Wait();
+            
+            var connection2 = ConnectionParams.FromString(config.GetAsString("storage_queue2"));
+            QueueNew = new StorageMessageQueue("TestQueue", connection2) {Interval = 50};
+            QueueNew.OpenAsync(null).Wait();
 
-            Fixture = new MessageQueueFixture(Queue);
+            Fixture = new MessageQueueFixtureBackwardCompatibility(QueueOld, QueueNew);
         }
 
         [Fact(Skip = "Not valid credentials")]
         //[Fact]
         public async Task TestStorageSendReceiveMessageAsync()
         {
-            await Queue.ClearAsync(null);
+            await QueueOld.ClearAsync(null);
             await Fixture.TestSendReceiveMessageAsync();
+        }
+
+        [Fact(Skip = "Not valid credentials")]
+        //[Fact]
+        public async Task TestSendReceiveMessageNewAsync()
+        {
+            await QueueOld.ClearAsync(null);
+            await Fixture.TestSendReceiveMessageNewAsync();
         }
 
         [Fact(Skip = "Not valid credentials")]
         //[Fact]
         public async Task TestStorageReceiveSendMessageAsync()
         {
-            await Queue.ClearAsync(null);
+            await QueueOld.ClearAsync(null);
             await Fixture.TestReceiveSendMessageAsync();
         }
 
@@ -42,7 +54,7 @@ namespace PipServices3.Azure.Queues
         //[Fact]
         public async Task TestStorageReceiveAndCompleteAsync()
         {
-            await Queue.ClearAsync(null);
+            await QueueOld.ClearAsync(null);
             await Fixture.TestReceiveAndCompleteMessageAsync();
         }
 
@@ -50,7 +62,7 @@ namespace PipServices3.Azure.Queues
         //[Fact]
         public async Task TestStorageReceiveAndAbandonAsync()
         {
-            await Queue.ClearAsync(null);
+            await QueueOld.ClearAsync(null);
             await Fixture.TestReceiveAndAbandonMessageAsync();
         }
 
@@ -58,7 +70,7 @@ namespace PipServices3.Azure.Queues
         //[Fact]
         public async Task TestStorageSendPeekMessageAsync()
         {
-            await Queue.ClearAsync(null);
+            await QueueOld.ClearAsync(null);
             await Fixture.TestSendPeekMessageAsync();
         }
 
@@ -66,7 +78,7 @@ namespace PipServices3.Azure.Queues
         //[Fact]
         public async Task TestStoragePeekNoMessageAsync()
         {
-            await Queue.ClearAsync(null);
+            await QueueOld.ClearAsync(null);
             await Fixture.TestPeekNoMessageAsync();
         }
 
@@ -74,7 +86,7 @@ namespace PipServices3.Azure.Queues
         //[Fact]
         public async Task TestStorageOnMessageAsync()
         {
-            await Queue.ClearAsync(null);
+            await QueueOld.ClearAsync(null);
             await Fixture.TestOnMessageAsync();
         }
 
@@ -91,13 +103,5 @@ namespace PipServices3.Azure.Queues
         {
             await Fixture.TestMessageCountAsync();
         }
-
-        //[TestMethod]
-        //public async Task TestStorageNullMessageAsync()
-        //{
-        //    var envelope = await Queue.ReceiveAsync(TimeSpan.FromMilliseconds(10000000));
-        //    await Queue.CompleteAsync(envelope);
-        //    Assert.IsNotNull(envelope);
-        //}
     }
 }

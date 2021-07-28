@@ -1,6 +1,6 @@
 # <img src="https://uploads-ssl.webflow.com/5ea5d3315186cf5ec60c3ee4/5edf1c94ce4c859f2b188094_logo.svg" alt="Pip.Services Logo" width="200"> <br/> Azure specific components .NET Changelog
 
-## <a name="3.2.5"></a> 3.2.5 (2021-07-26)
+## <a name="3.2.6"></a> 3.2.6 (2021-07-26)
 * Added backward compatibility for messaging 
 
 ## <a name="3.2.0-3.2.4"></a> 3.2.0-3.2.4 (2021-07-20) 
