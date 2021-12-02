@@ -4,11 +4,11 @@ using PipServices3.Components.Connect;
 using PipServices3.Commons.Data;
 using PipServices3.Commons.Errors;
 using PipServices3.Messaging.Queues;
+using PipServices3.Commons.Convert;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.Azure.ServiceBus;
@@ -68,15 +68,15 @@ namespace PipServices3.Azure.Queues
                 {
                     throw new ArgumentNullException(nameof(connections));
                 }
-                
+
                 _topicName = connection.GetAsNullableString("topic") ?? Name;
-                _tempSubscriber = connection.Get("Subscription") == null;
-                _subscriptionName = connection.Get("Subscription") ?? IdGenerator.NextLong(); // "AllMessages";
+                _tempSubscriber = connection.Get("subscription") == null || connection.Get("Subscription") == null;
+                _subscriptionName = connection.GetAsNullableString("subscription") ?? connection.Get("Subscription") ?? IdGenerator.NextLong(); // "AllMessages";
 
                 _connectionString = ConfigParams.FromTuples(
                     "Endpoint", connection.GetAsNullableString("uri") ?? connection.GetAsNullableString("Endpoint"),
-                    "SharedAccessKeyName", credential.AccessId ?? credential.GetAsNullableString("SharedAccessKeyName"),
-                    "SharedAccessKey", credential.AccessKey ?? credential.GetAsNullableString("SharedAccessKey")
+                    "SharedAccessKeyName", credential.AccessId ?? credential.GetAsNullableString("shared_access_key_name") ?? credential.GetAsNullableString("SharedAccessKeyName"),
+                    "SharedAccessKey", credential.AccessKey ?? credential.GetAsNullableString("shared_access_key") ?? credential.GetAsNullableString("SharedAccessKey")
                 ).ToString();
 
                 _namespaceManager = NamespaceManager.CreateFromConnectionString(_connectionString);
@@ -106,7 +106,7 @@ namespace PipServices3.Azure.Queues
                 // Remove temporary subscriber
                 if (_tempSubscriber == true)
                 {
-                    _namespaceManager.DeleteSubscription(_topicName, _subscriptionName);
+                    _namespaceManager?.DeleteSubscription(_topicName, _subscriptionName);
                 }
             }
 
@@ -118,8 +118,8 @@ namespace PipServices3.Azure.Queues
             // Commented because for dynamic topics it may create a new subscription on every call which causes failures
             CheckOpened(null);
             var subscription = GetSubscription();
-            var subscriptionDescription = _namespaceManager.GetSubscription(_topicName, _subscriptionName);
-            return subscriptionDescription.MessageCount;
+            var subscriptionDescription = _namespaceManager?.GetSubscription(_topicName, _subscriptionName);
+            return subscriptionDescription?.MessageCount ?? 0;
         }
 
         private TopicClient GetTopic()
@@ -165,7 +165,7 @@ namespace PipServices3.Azure.Queues
                         }
 
                         _logger.Info(null, "Connecting subscription {0} to Topic={1};Subscription={2};{3}",
-                            Name, _topicClient, _subscriptionClient, _connectionString);
+                            Name, _topicName, _subscriptionName, _connectionString);
 
                         _subscriptionClient = new SubscriptionClient(
                             _connectionString, _topicName, _subscriptionName, ReceiveMode.PeekLock);
@@ -209,7 +209,7 @@ namespace PipServices3.Azure.Queues
             await GetTopic().SendAsync(envelope);
 
             _counters.IncrementOne("queue." + Name + ".sent_messages");
-            _logger.Debug(message.CorrelationId, "Sent message {0} via {1}", message, this);
+            _logger.Trace(message.CorrelationId, $"Sent message with message id: {envelope.MessageId} and payload {JsonConverter.ToJson(message)} via {this}");
         }
 
         public override async Task<MessageEnvelope> PeekAsync(string correlationId)
@@ -261,13 +261,16 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(message.CorrelationId);
 
-            var reference = message.Reference?.ToString();
+            // Do nothing, instead MaxAutoRenewDuration parameter is used in Message Receiver handler
+            await Task.CompletedTask;
 
-            if (!string.IsNullOrWhiteSpace(reference))
-            {
-                await _messageReceiver.RenewLockAsync(message.Reference?.ToString());
-                _logger.Trace(message.CorrelationId, "Renewed lock for message {0} at {1}", message, this);
-            }
+            //var reference = message.Reference?.ToString();
+
+            //if (!string.IsNullOrWhiteSpace(reference))
+            //{
+            //    await _messageReceiver.RenewLockAsync(message.Reference?.ToString());
+            //    _logger.Trace(message.CorrelationId, "Renewed lock for message {0} at {1}", message, this);
+            //}
         }
 
         public override async Task AbandonAsync(MessageEnvelope message)
@@ -319,36 +322,38 @@ namespace PipServices3.Azure.Queues
             _logger.Trace(correlationId, "Started listening messages at {0}", this);
 
             GetSubscription().RegisterMessageHandler(async (envelope, cancellationToken) =>
+            {
+                var message = ToMessage(envelope);
+
+                if (message != null)
                 {
-                    var message = ToMessage(envelope);
+                    _counters.IncrementOne("queue." + Name + ".received_messages");
+                    _logger.Debug(message.CorrelationId, "Received message {0} via {1}", message, this);
+                }
 
-                    if (message != null)
-                    {
-                        _counters.IncrementOne("queue." + Name + ".received_messages");
-                        _logger.Debug(message.CorrelationId, "Received message {0} via {1}", message, this);
-                    }
-
-                    try
-                    {
-                        await receiver.ReceiveMessageAsync(message, this);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(correlationId, ex, "Failed to process the message");
-                        throw ex;
-                    }
-
-                    await GetSubscription().CompleteAsync(envelope.SystemProperties.LockToken);
-                },
-                new MessageHandlerOptions(exception => 
-                    {
-                        _logger.Error(correlationId, exception.Exception, "Failed to process the message");
-                        return Task.CompletedTask;
-                    })
+                try
                 {
-                    AutoComplete = false,
-                    MaxConcurrentCalls = 1
-                });
+                    await receiver.ReceiveMessageAsync(message, this);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(correlationId, ex, "Failed to process the message");
+                    throw;
+                }
+
+                // Don't finalize message here, it should be done by CompleteAsync method
+                //await GetSubscription().CompleteAsync(envelope.SystemProperties.LockToken);
+            },
+            new MessageHandlerOptions(exception =>
+            {
+                _logger.Error(correlationId, exception.Exception, "Failed to process the message");
+                return Task.CompletedTask;
+            })
+            {
+                AutoComplete = false,
+                MaxConcurrentCalls = 1,
+                MaxAutoRenewDuration = TimeSpan.FromMinutes(15)
+            });
 
             await Task.CompletedTask;
         }
