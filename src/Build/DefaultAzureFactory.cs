@@ -16,8 +16,10 @@ namespace PipServices3.Azure.Build
 
         public static Descriptor StorageMessageQueueDescriptor = new Descriptor("pip-services", "message-queue", "storage-message-queue", "default", "1.0");
         public static Descriptor StorageMessageQueue3Descriptor = new Descriptor("pip-services3", "message-queue", "storage-message-queue", "default", "1.0");
-        public static Descriptor ServiceBusMessageQueueDescriptor = new Descriptor("pip-services3", "message-queue", "servicebus-message-queue", "*", "1.0");
-        public static Descriptor ServiceBusMessageTopicDescriptor = new Descriptor("pip-services3", "message-queue", "servicebus-message-topic", "*", "1.0");
+        public static Descriptor ServiceBusMessageQueueDescriptor = new Descriptor("pip-services", "message-queue", "servicebus-message-queue", "*", "1.0");
+        public static Descriptor ServiceBusMessageQueue3Descriptor = new Descriptor("pip-services3", "message-queue", "servicebus-message-queue", "*", "1.0");
+        public static Descriptor ServiceBusMessageTopicDescriptor = new Descriptor("pip-services", "message-queue", "servicebus-message-topic", "*", "1.0");
+        public static Descriptor ServiceBusMessageTopic3Descriptor = new Descriptor("pip-services3", "message-queue", "servicebus-message-topic", "*", "1.0");
         public static Descriptor KeyVaultConfigReaderDescriptor = new Descriptor("pip-services", "config-reader", "key-vault", "*", "1.0");
         public static Descriptor KeyVaultConfigReader3Descriptor = new Descriptor("pip-services3", "config-reader", "key-vault", "*", "1.0");
         public static Descriptor AppInsightsCountersDescriptor = new Descriptor("pip-services", "counters", "app-insights", "*", "1.0");
@@ -34,7 +36,9 @@ namespace PipServices3.Azure.Build
             RegisterAsType(StorageMessageQueueDescriptor, typeof(StorageMessageQueue));
             RegisterAsType(StorageMessageQueue3Descriptor, typeof(StorageMessageQueue));
             RegisterAsType(ServiceBusMessageQueueDescriptor, typeof(ServiceBusMessageQueue));
+            RegisterAsType(ServiceBusMessageQueue3Descriptor, typeof(ServiceBusMessageQueue));
             RegisterAsType(ServiceBusMessageTopicDescriptor, typeof(ServiceBusMessageTopic));
+            RegisterAsType(ServiceBusMessageTopic3Descriptor, typeof(ServiceBusMessageTopic));
             RegisterAsType(KeyVaultConfigReaderDescriptor, typeof(KeyVaultConfigReader));
             RegisterAsType(KeyVaultConfigReader3Descriptor, typeof(KeyVaultConfigReader));
             RegisterAsType(AppInsightsCountersDescriptor, typeof(AppInsightsCounters));
