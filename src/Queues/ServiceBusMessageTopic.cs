@@ -31,6 +31,11 @@ namespace PipServices3.Azure.Queues
         private NamespaceManager _namespaceManager;
         private MessageReceiver _messageReceiver;
 
+        public ServiceBusMessageTopic() 
+            : this(null)
+        {
+        }
+
         public ServiceBusMessageTopic(string name = null)
         {
             Name = name;

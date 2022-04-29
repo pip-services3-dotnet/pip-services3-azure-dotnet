@@ -1,7 +1,12 @@
 # <img src="https://uploads-ssl.webflow.com/5ea5d3315186cf5ec60c3ee4/5edf1c94ce4c859f2b188094_logo.svg" alt="Pip.Services Logo" width="200"> <br/> Azure specific components .NET Changelog
 
-## <a name="3.3.0-3.3.1"></a> 3.3.0-3.3.1 (2021-12-02)
+## <a name="3.3.0-3.3.2"></a> 3.3.0-3.3.2 (2021-12-03)
+
+### Features
 * Clean-up and adjusted implementation of ServiceBusMessageTopic  
+
+### Bug Fixes
+* Added missing parameterless constructors to ServiceBusMessageTopic, ServiceBusMessageQueue
 
 ### Breaking Changes
 * Migrate to .NET Core 5.0
