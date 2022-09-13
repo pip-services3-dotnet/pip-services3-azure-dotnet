@@ -77,7 +77,9 @@ namespace PipServices3.Azure.Persistence
             _logger.SetReferences(references);
         }
 
+#pragma warning disable AZFW0002 // Avoid async void methods
         public async virtual void PerformMonitorAsync()
+#pragma warning restore AZFW0002 // Avoid async void methods
         {
             // 1. Check lock - if it's locked, don't process tracking records
             if (!_lock.TryAcquireLock(CorrelationId, $"ThroughputMonitor ({InternalCollectionNames})", TimerInterval))
