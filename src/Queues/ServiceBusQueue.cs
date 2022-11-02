@@ -103,11 +103,11 @@ namespace PipServices3.Azure.Queues
             _logger.Trace(correlationId, "Closed queue {0}", this);
         }
 
-        public override async Task<long> ReadMessageCountAsync()
+        public override Task<long> ReadMessageCountAsync()
         {
             CheckOpened(null);
             var queueDescription = _namespaceManager.GetQueue(_queueName);
-            return queueDescription.MessageCount;
+            return Task.FromResult(queueDescription.MessageCount);
         }
 
         private MessageEnvelope ToMessage(Message envelope, bool withLock = true)

@@ -17,8 +17,8 @@ namespace PipServices3.Azure.Queues
 {
     public class StorageMessageQueue : MessageQueue
     {
-        private bool _backwardCompatibility = true; 
-        
+        private bool _backwardCompatibility = true;
+
         private long DefaultVisibilityTimeout = 60000;
         private long DefaultCheckInterval = 10000;
 
@@ -27,7 +27,7 @@ namespace PipServices3.Azure.Queues
         private CancellationTokenSource _cancel = new CancellationTokenSource();
 
         public StorageMessageQueue()
-            : this (null)
+            : this(null)
         {
         }
 
@@ -44,7 +44,7 @@ namespace PipServices3.Azure.Queues
             if (config != null)
             {
                 Configure(config);
-                
+
             }
         }
 
@@ -121,11 +121,11 @@ namespace PipServices3.Azure.Queues
             await Task.Delay(0);
         }
 
-        public override async Task<long> ReadMessageCountAsync()
+        public override Task<long> ReadMessageCountAsync()
         {
             CheckOpened(null);
             _queue.FetchAttributesAsync().Wait();
-            return _queue.ApproximateMessageCount??0;
+            return Task.FromResult<long>(_queue.ApproximateMessageCount ?? 0);
         }
 
         private MessageEnvelope ToMessage(CloudQueueMessage envelope)
@@ -161,7 +161,7 @@ namespace PipServices3.Azure.Queues
 
             if (oldMessage != null)
             {
-                if (message.Message==null) message.SetMessageAsString(oldMessage.Message);
+                if (message.Message == null) message.SetMessageAsString(oldMessage.Message);
                 message.CorrelationId = message.CorrelationId ?? oldMessage.CorrelationId;
                 message.MessageType = message.MessageType ?? oldMessage.MessageType;
             }

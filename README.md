@@ -3,6 +3,9 @@
 This module is a part of the [Pip.Services](http://pipservices.org) polyglot microservices toolkit.
 The module contains components for working with the Microsoft Azure cloud service.
 
+- NOTE: since version 3.5.0 .NET below 6.0 has been deprecated. 
+- More details: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-and-net-core
+
 The module contains the following packages:
 
 - **Auth** - KeyVault credential provider

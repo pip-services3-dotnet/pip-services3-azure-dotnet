@@ -91,7 +91,7 @@ namespace PipServices3.Azure.Persistence
             catch (Exception exception)
             {
                 Logger.Error(correlationId, exception, $"CreatePartitionCollectionAsync: Failed to create the collection '{CollectionName}' in the CosmosDB database '{DatabaseName}'.");
-                throw exception;
+                throw;
             }
         }
 

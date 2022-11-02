@@ -118,13 +118,13 @@ namespace PipServices3.Azure.Queues
             _logger.Trace(correlationId, "Closed queue {0}", this);
         }
 
-        public override async Task<long> ReadMessageCountAsync()
+        public override Task<long> ReadMessageCountAsync()
         {
             // Commented because for dynamic topics it may create a new subscription on every call which causes failures
             CheckOpened(null);
             var subscription = GetSubscription();
             var subscriptionDescription = _namespaceManager?.GetSubscription(_topicName, _subscriptionName);
-            return subscriptionDescription?.MessageCount ?? 0;
+            return Task.FromResult(subscriptionDescription?.MessageCount ?? 0);
         }
 
         private TopicClient GetTopic()
