@@ -96,10 +96,11 @@ namespace PipServices3.Azure.Services
 
                     try
                     {
-                        using var timing = Instrument(correlationId, name);
-                        var result = await command.ExecuteAsync(correlationId, args);
-                        return AzureFunctionResponseSender.SendResultAsync(result);
-                        
+                        using (var timing = Instrument(correlationId, name))
+                        {
+                            var result = await command.ExecuteAsync(correlationId, args);
+                            return AzureFunctionResponseSender.SendResultAsync(result);
+                        }
                     }
                     catch (Exception ex)
                     {
