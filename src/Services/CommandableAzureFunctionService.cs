@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using PipServices3.Azure.Utils;
+﻿using PipServices3.Azure.Utils;
 using PipServices3.Commons.Commands;
 using System;
 
@@ -113,5 +111,3 @@ namespace PipServices3.Azure.Services
         }
     }
 }
-
-#endif

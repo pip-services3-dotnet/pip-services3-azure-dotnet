@@ -1,13 +1,8 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using Microsoft.Azure.Amqp.Framing;
-using PipServices3.Commons.Config;
+﻿using PipServices3.Commons.Config;
 using PipServices3.Commons.Refer;
 using PipServices3.Components.Auth;
 using PipServices3.Components.Connect;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace PipServices3.Azure.Connect
@@ -80,5 +75,3 @@ namespace PipServices3.Azure.Connect
         }
     }
 }
-
-#endif

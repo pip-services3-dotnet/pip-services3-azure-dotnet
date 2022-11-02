@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using PipServices3.Commons.Convert;
+﻿using PipServices3.Commons.Convert;
 using PipServices3.Commons.Run;
 
 using System.IO;
@@ -152,5 +150,3 @@ namespace PipServices3.Azure.Utils
         }
     }
 }
-
-#endif

@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -399,5 +397,3 @@ namespace PipServices3.Azure.Services
         }
     }
 }
-
-#endif

@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using PipServices3.Commons.Commands;
 
@@ -111,5 +109,3 @@ namespace PipServices3.Azure.Clients
         }
     }
 }
-
-#endif

@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PipServices3.Commons.Validate;
 using System;
@@ -26,5 +24,3 @@ namespace PipServices3.Azure.Services
         public Func<HttpRequest, Task<IActionResult>> Action { get; set; }
     }
 }
-
-#endif

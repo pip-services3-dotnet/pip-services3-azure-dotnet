@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PipServices3.Azure.Services;
 using PipServices3.Azure.Utils;
@@ -366,5 +364,3 @@ namespace PipServices3.Azure.Containers
         }
     }
 }
-
-#endif

@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PipServices3.Commons.Convert;
 using PipServices3.Commons.Errors;
 using System;
@@ -135,5 +133,3 @@ namespace PipServices3.Azure.Utils
         }
     }
 }
-
-#endif

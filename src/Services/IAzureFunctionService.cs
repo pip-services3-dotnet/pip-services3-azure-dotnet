@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace PipServices3.Azure.Services
 {
@@ -17,5 +15,3 @@ namespace PipServices3.Azure.Services
         IList<AzureFunctionAction> GetActions();
     }
 }
-
-#endif

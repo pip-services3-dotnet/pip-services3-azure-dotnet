@@ -1,6 +1,4 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using PipServices3.Azure.Connect;
+﻿using PipServices3.Azure.Connect;
 using PipServices3.Commons.Config;
 using PipServices3.Commons.Convert;
 using PipServices3.Commons.Errors;
@@ -380,5 +378,3 @@ namespace PipServices3.Azure.Clients
         }
     }
 }
-
-#endif

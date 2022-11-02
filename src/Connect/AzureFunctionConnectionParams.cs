@@ -1,15 +1,9 @@
-﻿#if NETCOREAPP3_1_OR_GREATER
-
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Documents.Client;
-using PipServices3.Commons.Config;
+﻿using PipServices3.Commons.Config;
 using PipServices3.Commons.Data;
 using PipServices3.Commons.Errors;
 using PipServices3.Components.Auth;
 using PipServices3.Components.Connect;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace PipServices3.Azure.Connect
 {
@@ -107,5 +101,3 @@ namespace PipServices3.Azure.Connect
         }
     }
 }
-
-#endif
