@@ -7,7 +7,7 @@ using Xunit;
 namespace PipServices3.Azure.Clients
 {
     [Collection("Sequential")]
-    public class DummyCommandableAzureFunctionClientTest
+    public class DummyCommandableAzureFunctionClientTest: IDisposable
     {
         protected DummyCommandableAzureFunctionClient client;
         protected DummyClientFixture fixture;

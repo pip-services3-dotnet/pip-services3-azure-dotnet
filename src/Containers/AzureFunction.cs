@@ -100,8 +100,6 @@ namespace PipServices3.Azure.Containers
             _logger = new ConsoleLogger();
         }
 
-        public AzureFunction() { }
-
         private string GetConfigPath()
         {
             return Environment.GetEnvironmentVariable("CONFIG_PATH") ?? this._configPath;

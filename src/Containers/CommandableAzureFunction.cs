@@ -65,11 +65,6 @@ namespace PipServices3.Azure.Containers
         }
 
         /// <summary>
-        /// Creates a new instance of this Azure Function.
-        /// </summary>
-        public CommandableAzureFunction(): this(null, null) { }
-
-        /// <summary>
         /// Returns body from Azure Function request.
         /// This method can be overloaded in child classes
         /// </summary>
