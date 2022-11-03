@@ -52,7 +52,7 @@ namespace PipServices3.Azure.Containers
     /// 
     /// </code>
     /// </example>
-    public class CommandableAzureFunction : AzureFunction
+    public abstract class CommandableAzureFunction : AzureFunction
     {
         /// <summary>
         /// Creates a new instance of this Azure Function.

@@ -82,7 +82,7 @@ namespace PipServices3.Azure.Clients
     /// 
     /// </code>
     /// </example>
-    public class AzureFunctionClient : IOpenable, IConfigurable, IReferenceable
+    public abstract class AzureFunctionClient : IOpenable, IConfigurable, IReferenceable
     {
         /// <summary>
         /// The HTTP client.
