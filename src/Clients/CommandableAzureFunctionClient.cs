@@ -89,7 +89,7 @@ namespace PipServices3.Azure.Clients
         /// <param name="correlationId">(optional) transaction id to trace execution through call chain.</param>
         /// <param name="args">command parameters.</param>
         /// <returns>action result.</returns>
-        public async Task<T> CallCommand<T>(string cmd, string correlationId, object args)
+        public async Task<T> CallCommandAsync<T>(string cmd, string correlationId, object args)
             where T : class
         {
             var timing = Instrument(correlationId, _name + '.' + cmd);

@@ -67,7 +67,7 @@ namespace PipServices3.Azure.Services
         /// <param name="name">a service name.</param>
         public CommandableAzureFunctionService(string name): base(name)
         {   
-            this._dependencyResolver.Put("controller", "none");
+            _dependencyResolver.Put("controller", "none");
         }
 
         /// <summary>
