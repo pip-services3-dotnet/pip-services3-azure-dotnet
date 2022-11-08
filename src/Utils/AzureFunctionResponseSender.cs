@@ -6,6 +6,9 @@ using System.Net;
 
 namespace PipServices3.Azure.Utils
 {
+    /// <summary>
+    /// Helper class that send responses
+    /// </summary>
     public class AzureFunctionResponseSender
     {
         /// <summary>
@@ -68,7 +71,7 @@ namespace PipServices3.Azure.Utils
         }
 
         /// <summary>
-        /// Creates a callback function that sends an empty result with 204 status code.
+        /// Sends an empty result with 204 status code.
         /// If error occur it sends ErrorDescription with approproate status code.
         /// </summary>
         /// <param name="response">aHttp response</param>
@@ -83,7 +86,7 @@ namespace PipServices3.Azure.Utils
         }
 
         /// <summary>
-        /// Creates a callback function that sends newly created object as JSON. That
+        /// Sends newly created object as JSON. That
         /// callack function call be called directly or passed as a parameter to business logic components.
         /// 
         /// If object is not null it returns 201 status code. For null results it returns
