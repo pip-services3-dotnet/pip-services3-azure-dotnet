@@ -5,14 +5,15 @@ using PipServices3.Components.Log;
 
 using System;
 
-using Microsoft.Azure.Cosmos.Table;
+using Azure;
+using Azure.Data.Tables;
 
 namespace PipServices3.Azure.Lock
 {
     public class CloudStorageTableLock : Components.Lock.Lock, IConfigurable, IReferenceable
     {
-        private CloudTableClient _client;
-        private CloudTable _table;
+        private TableServiceClient _serviceClient;
+        private TableClient _tableClient;
         private ConfigParams _connectionConfigParams;
 
         protected CompositeLogger _logger = new CompositeLogger();
@@ -43,12 +44,10 @@ namespace PipServices3.Azure.Lock
                 connection.Remove("Table");
 
                 var newConnectionString = connection.ToString();
-                CloudStorageAccount storageAccount = CloudStorageAccount.Parse(newConnectionString);
 
-                _client = storageAccount.CreateCloudTableClient();
+                _serviceClient = new TableServiceClient(newConnectionString);
 
-                _table = _client.GetTableReference(tableName.ToString());
-                _table.CreateIfNotExistsAsync().Wait();
+                _tableClient = _serviceClient.GetTableClient(tableName);
 
                 _logger.Trace("CloudStorageTableLock", $"Connected to lock storage table '{tableName}'.");
             }
@@ -63,18 +62,18 @@ namespace PipServices3.Azure.Lock
         {
             try
             {
-                if (_table == null)
+                if (_tableClient == null)
                 {
                     _logger.Error(correlationId, $"TryAcquireLock: Lock storage table is not initialized.");
                     return false;
                 }
 
-                var operation = TableOperation.Retrieve<TableLock>(correlationId, key);
-                var record = _table.ExecuteAsync(operation).Result;
-                var tableLock = record.Result as TableLock;
+                var result = _tableClient.GetEntityIfExists<TableLock>(correlationId, key);
 
-                if (tableLock != null)
+                if (result.HasValue)
                 {
+                    var tableLock = result.Value;
+
                     if (tableLock.Expired > DateTime.UtcNow)
                     {
                         _logger.Trace(correlationId, $"TryAcquireLock: Key = '{key}' has been already locked and not expired.");
@@ -86,8 +85,7 @@ namespace PipServices3.Azure.Lock
 
                 var lockRecord = new TableLock(correlationId, key, timeToLive);
 
-                var insertOrReplaceOperation = TableOperation.InsertOrReplace(lockRecord);
-                _table.ExecuteAsync(insertOrReplaceOperation).Wait();
+                _tableClient.UpsertEntity(lockRecord);
 
                 _logger.Trace(correlationId, $"TryAcquireLock: Set Key = '{key}' to 'lock' state; it will be expired at {lockRecord.Expired.ToString()} UTC.");
                 return true;
@@ -103,21 +101,19 @@ namespace PipServices3.Azure.Lock
         {
             try
             {
-                if (_table == null)
+                if (_tableClient == null)
                 {
                     _logger.Error(correlationId, $"TryAcquireLock: Lock storage table is not initialized.");
                     return;
                 }
 
-                var operation = TableOperation.Retrieve<TableLock>(correlationId, key);
-                var result = _table.ExecuteAsync(operation).Result;
-                if (result.Result != null)
+                var result = _tableClient.GetEntityIfExists<TableLock>(correlationId, key);
+
+                if (result.HasValue)
                 {
-                    var record = (TableLock)(result.Result);
-                    operation = TableOperation.Delete(record);
                     try
                     {
-                        _table.ExecuteAsync(operation).Wait();
+                        _tableClient.DeleteEntity(correlationId, key);
                         _logger.Trace(correlationId, $"ReleaseLock: Key = '{key}' is released from 'lock' state.");
                     }
                     catch (Exception exception)
@@ -132,8 +128,12 @@ namespace PipServices3.Azure.Lock
             }
         }
 
-        public class TableLock : TableEntity
+        public class TableLock : ITableEntity
         {
+            public string PartitionKey { get; set; }
+            public string RowKey { get; set; }
+            public DateTimeOffset? Timestamp { get; set; }
+            public ETag ETag { get; set; }
             public DateTime Expired { get; set; }
 
             public TableLock() { }
