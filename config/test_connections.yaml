@@ -1,5 +1,5 @@
 storage_queue: "queue=testqueue;dead=deadqueue;protocol=https;account_name=TBD;account_key=TBD"
-sb_queue: "queue=testqueue;uri=sb://TBD.servicebus.windows.net/;access_id=RootManageSharedAccessKey;access_key=TBD"
+sb_queue: "connection.queue=TBD;connection.uri=sb://TBD.servicebus.windows.net/;credential.shared_access_key_name=RootManageSharedAccessKey;credential.shared_access_key=TBD"
 sb_topic: "connection.uri=sb://TBD.servicebus.windows.net/;connection.topic=TBD;connection.subscription=TBD;credential.shared_access_key_name=RootManageSharedAccessKey;credential.shared_access_key=TBD"
 key_vault: "key_vault=TBD;access_id=TBD;access_key=TBD"
 storage_lock: "table=locks;connection.protocol=https;credential.access_id=TBD;credential.access_key=TBD"

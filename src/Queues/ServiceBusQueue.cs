@@ -75,8 +75,8 @@ namespace PipServices3.Azure.Queues
 
                 _connectionString = ConfigParams.FromTuples(
                     "Endpoint", connection.GetAsNullableString("uri") ?? connection.GetAsNullableString("Endpoint"),
-                    "SharedAccessKeyName", credential.AccessId ?? credential.GetAsNullableString("SharedAccessKeyName"),
-                    "SharedAccessKey", credential.AccessKey ?? credential.GetAsNullableString("SharedAccessKey")
+                    "SharedAccessKeyName", credential.AccessId ?? credential.GetAsNullableString("shared_access_key_name") ?? credential.GetAsNullableString("SharedAccessKeyName"),
+                    "SharedAccessKey", credential.AccessKey ?? credential.GetAsNullableString("shared_access_key") ?? credential.GetAsNullableString("SharedAccessKey")
                 ).ToString();
 
                 _logger.Info(null, "Connecting queue {0} to {1}", Name, _connectionString);
@@ -115,10 +115,37 @@ namespace PipServices3.Azure.Queues
             _logger.Trace(correlationId, "Closed queue {0}", this);
         }
 
-        public override Task<long> ReadMessageCountAsync()
+        public override async Task<long> ReadMessageCountAsync()
         {
             CheckOpened(null);
-            return Task.FromResult((long)_messageReceiver.PrefetchCount);
+
+            var previousSequenceNumber = -1L;
+            var sequenceNumber = 0L;
+            var counter = 0L;
+            do
+            {
+                var peekMessages = await _messageReceiver.PeekMessagesAsync(int.MaxValue, sequenceNumber);
+
+                if (peekMessages.Count > 0)
+                {
+                    sequenceNumber = peekMessages[^1].SequenceNumber;
+
+                    if (sequenceNumber == previousSequenceNumber)
+                    {
+                        break;
+                    }
+
+                    previousSequenceNumber = sequenceNumber;
+                    counter += peekMessages.Count;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            while (true);
+
+            return await Task.FromResult(counter);
         }
 
         private MessageEnvelope ToMessage(ServiceBusReceivedMessage envelope)
@@ -281,7 +308,7 @@ namespace PipServices3.Azure.Queues
                 catch (Exception ex)
                 {
                     _logger.Error(correlationId, ex, "Failed to process the message");
-                    throw ex;
+                    throw;
                 }
 
                 await _messageReceiver.CompleteMessageAsync(arg.Message);
@@ -315,18 +342,23 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(correlationId);
 
-            while (true)
+            try
             {
-                var envelope = await _messageReceiver.ReceiveMessageAsync(TimeSpan.FromMilliseconds(0));
-                if (envelope == null)
+                while (await _messageReceiver.PeekMessageAsync() != null)
                 {
-                    break;
+                    var brokeredMessages = await _messageReceiver.ReceiveMessagesAsync(int.MaxValue);
+
+                    var completeTasks = brokeredMessages.Select(m => Task.Run(() => _messageReceiver.CompleteMessageAsync(m))).ToArray();
+
+                    Task.WaitAll(completeTasks);
                 }
 
-                await _messageReceiver.CompleteMessageAsync(envelope);
+                _logger.Trace(correlationId, "Cleared queue {0}", this);
             }
-
-            _logger.Trace(correlationId, "Cleared queue {0}", this);
+            catch (Exception ex)
+            {
+                _logger.Error(correlationId, ex, $"Failed to clear queue {this}");
+            }
         }
     }
 }
