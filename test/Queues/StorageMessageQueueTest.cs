@@ -48,6 +48,14 @@ namespace PipServices3.Azure.Queues
 
         [Fact(Skip = "Not valid credentials")]
         //[Fact]
+        public async Task TestStorageReceiveAndRenewLockAndCompleteAsync()
+        {
+            await Queue.ClearAsync(null);
+            await Fixture.TestReceiveAndRenewLockAndCompleteMessageAsync();
+        }
+
+        [Fact(Skip = "Not valid credentials")]
+        //[Fact]
         public async Task TestStorageReceiveAndAbandonAsync()
         {
             await Queue.ClearAsync(null);

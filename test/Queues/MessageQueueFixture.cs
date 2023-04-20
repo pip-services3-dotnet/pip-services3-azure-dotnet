@@ -1,5 +1,5 @@
 ﻿using PipServices3.Messaging.Queues;
-
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,8 +72,21 @@ namespace PipServices3.Azure.Queues
             Assert.Equal(envelope1.CorrelationId, envelope2.CorrelationId);
 
             await _queue.CompleteAsync(envelope2);
-            //envelope2 = await _queue.PeekAsync();
-            //Assert.IsNull(envelope2);
+        }
+
+        public async Task TestReceiveAndRenewLockAndCompleteMessageAsync()
+        {
+            var envelope1 = new MessageEnvelope("123", "Test", "Test message");
+            await _queue.SendAsync(null, envelope1);
+            var envelope2 = await _queue.ReceiveAsync(null, 10000);
+            Assert.NotNull(envelope2);
+            Assert.Equal(envelope1.MessageType, envelope2.MessageType);
+            Assert.Equal(envelope1.Message, envelope2.Message);
+            Assert.Equal(envelope1.CorrelationId, envelope2.CorrelationId);
+
+            await _queue.RenewLockAsync(envelope2, (long)TimeSpan.FromSeconds(30).TotalMilliseconds);
+
+            await _queue.CompleteAsync(envelope2);
         }
 
         public async Task TestReceiveAndAbandonMessageAsync()

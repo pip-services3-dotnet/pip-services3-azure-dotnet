@@ -298,7 +298,8 @@ namespace PipServices3.Azure.Queues
             var envelope = (QueueMessage)message.Reference;
             if (envelope != null)
             {
-                await _queue.UpdateMessageAsync(envelope.MessageId, envelope.PopReceipt, visibilityTimeout: TimeSpan.FromMilliseconds(lockTimeout));
+                var updateMessageResponse = await _queue.UpdateMessageAsync(envelope.MessageId, envelope.PopReceipt, visibilityTimeout: TimeSpan.FromMilliseconds(lockTimeout));
+                message.Reference = envelope.Update(updateMessageResponse.Value);
                 _logger.Trace(message.CorrelationId, "Renewed lock for message {0} at {1}", message, this);
             }
         }
@@ -367,7 +368,15 @@ namespace PipServices3.Azure.Queues
 
             while (!_cancel.IsCancellationRequested)
             {
-                QueueMessage envelope = await _queue.ReceiveMessageAsync(TimeSpan.FromMilliseconds(DefaultVisibilityTimeout), _cancel.Token);
+                QueueMessage envelope = null;
+                try
+                {
+                    envelope = await _queue.ReceiveMessageAsync(TimeSpan.FromMilliseconds(DefaultVisibilityTimeout), _cancel.Token);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    _logger.Error(correlationId, ex, "Stop to receive the messages.");
+                }
 
                 if (envelope != null && !_cancel.IsCancellationRequested)
                 {
@@ -383,7 +392,6 @@ namespace PipServices3.Azure.Queues
                     catch (Exception ex)
                     {
                         _logger.Error(correlationId, ex, "Failed to process the message");
-                        //throw ex;
                     }
                 }
                 else
