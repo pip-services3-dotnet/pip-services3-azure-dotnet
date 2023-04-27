@@ -1,13 +1,12 @@
-﻿using Azure.Storage.Queues;
-using Azure.Storage.Queues.Models;
-
-using PipServices3.Azure.Persistence.Data;
+﻿using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.Queue;
 using PipServices3.Components.Auth;
 using PipServices3.Commons.Config;
 using PipServices3.Components.Connect;
 using PipServices3.Commons.Convert;
 using PipServices3.Commons.Errors;
 using PipServices3.Messaging.Queues;
+using PipServices3.Azure.Persistence.Data;
 
 using System;
 using System.Collections.Generic;
@@ -17,6 +16,11 @@ using System.Threading.Tasks;
 
 namespace PipServices3.Azure.Queues
 {
+    /// <summary>
+    /// It requires deprecated package Microsoft.Azure.Storage.Queue.
+    /// Please use <see cref="PipServices3.Azure.Queues.StorageMessageQueue"/> instead.
+    /// </summary>
+    [Obsolete("It requires deprecated package Microsoft.Azure.Storage.Queue. Please use PipServices3.Azure.Queues.StorageMessageQueueV2 instead.")]
     public class StorageMessageQueue : MessageQueue
     {
         private bool _backwardCompatibility = true;
@@ -24,8 +28,8 @@ namespace PipServices3.Azure.Queues
         private long DefaultVisibilityTimeout = 60000;
         private long DefaultCheckInterval = 10000;
 
-        private QueueClient _queue;
-        private QueueClient _deadQueue;
+        private CloudQueue _queue;
+        private CloudQueue _deadQueue;
         private CancellationTokenSource _cancel = new CancellationTokenSource();
 
         public StorageMessageQueue()
@@ -50,6 +54,12 @@ namespace PipServices3.Azure.Queues
             }
         }
 
+        public StorageMessageQueue(string name, CloudQueue queue)
+            : this(name)
+        {
+            _queue = queue;
+        }
+
         public long Interval { get; set; }
 
         public sealed override void Configure(ConfigParams config)
@@ -61,7 +71,7 @@ namespace PipServices3.Azure.Queues
 
         private void CheckOpened(string correlationId)
         {
-            if (_queue == null || !_queue.Exists())
+            if (_queue == null)
                 throw new InvalidStateException(correlationId, "NOT_OPENED", "The queue is not opened");
         }
 
@@ -88,12 +98,15 @@ namespace PipServices3.Azure.Queues
 
                 _logger.Info(null, "Connecting queue {0} to {1}", Name, connectionString);
 
+                var storageAccount = CloudStorageAccount.Parse(connectionString);
+                var client = storageAccount.CreateCloudQueueClient();
+
                 var queueName = connection.Get("queue") ?? Name;
-                _queue = new QueueClient(connectionString, queueName);
+                _queue = client.GetQueueReference(queueName);
                 await _queue.CreateIfNotExistsAsync();
 
                 var deadName = connection.Get("dead");
-                _deadQueue = deadName != null ? new QueueClient(connectionString, deadName) : null;
+                _deadQueue = deadName != null ? client.GetQueueReference(deadName) : null;
 
             }
             catch (Exception ex)
@@ -114,14 +127,14 @@ namespace PipServices3.Azure.Queues
             await Task.Delay(0);
         }
 
-        public override async Task<long> ReadMessageCountAsync()
+        public override Task<long> ReadMessageCountAsync()
         {
             CheckOpened(null);
-            QueueProperties properties = await _queue.GetPropertiesAsync();
-            return properties.ApproximateMessagesCount;
+            _queue.FetchAttributesAsync().Wait();
+            return Task.FromResult<long>(_queue.ApproximateMessageCount ?? 0);
         }
 
-        private MessageEnvelope ToMessage(QueueMessage envelope)
+        private MessageEnvelope ToMessage(CloudQueueMessage envelope)
         {
             if (envelope == null) return null;
 
@@ -130,13 +143,13 @@ namespace PipServices3.Azure.Queues
 
             try
             {
-                message = JsonConverter.FromJson<MessageEnvelope>(envelope.Body.ToString());
-                oldMessage = JsonConverter.FromJson<BackwardCompatibilityMessageEnvelope>(envelope.Body.ToString());
+                message = JsonConverter.FromJson<MessageEnvelope>(envelope.AsString);
+                oldMessage = JsonConverter.FromJson<BackwardCompatibilityMessageEnvelope>(envelope.AsString);
             }
             catch
             {
                 // Handle broken messages gracefully
-                _logger.Warn(null, "Cannot deserialize message: " + envelope.Body.ToString());
+                _logger.Warn(null, "Cannot deserialize message: " + envelope.AsString);
             }
 
             // If message is broken or null
@@ -144,51 +157,12 @@ namespace PipServices3.Azure.Queues
             {
                 message = new MessageEnvelope
                 {
-                    Message = envelope.Body.ToArray()
+                    Message = envelope.AsBytes
                 };
             }
 
-            message.SentTime = envelope.InsertedOn?.UtcDateTime ?? DateTime.UtcNow;
-            message.Reference = envelope;
-
-            if (oldMessage != null)
-            {
-                if (message.Message == null) message.SetMessageAsString(oldMessage.Message);
-                message.CorrelationId = message.CorrelationId ?? oldMessage.CorrelationId;
-                message.MessageType = message.MessageType ?? oldMessage.MessageType;
-            }
-
-            return message;
-        }
-
-        private MessageEnvelope ToMessage(PeekedMessage envelope)
-        {
-            if (envelope == null) return null;
-
-            MessageEnvelope message = null;
-            BackwardCompatibilityMessageEnvelope oldMessage = null;
-
-            try
-            {
-                message = JsonConverter.FromJson<MessageEnvelope>(envelope.Body.ToString());
-                oldMessage = JsonConverter.FromJson<BackwardCompatibilityMessageEnvelope>(envelope.Body.ToString());
-            }
-            catch
-            {
-                // Handle broken messages gracefully
-                _logger.Warn(null, "Cannot deserialize message: " + envelope.Body.ToString());
-            }
-
-            // If message is broken or null
-            if (message == null)
-            {
-                message = new MessageEnvelope
-                {
-                    Message = envelope.Body.ToArray()
-                };
-            }
-
-            message.SentTime = envelope.InsertedOn?.UtcDateTime ?? DateTime.UtcNow;
+            message.SentTime = envelope.InsertionTime?.UtcDateTime ?? DateTime.UtcNow;
+            message.MessageId = envelope.Id;
             message.Reference = envelope;
 
             if (oldMessage != null)
@@ -205,13 +179,13 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(correlationId);
             var envelope = FromMessage(message);
-            SendReceipt sendReceipt = await _queue.SendMessageAsync(envelope);
+            await _queue.AddMessageAsync(envelope);
 
             _counters.IncrementOne("queue." + Name + ".sent_messages");
             _logger.Debug(message.CorrelationId, "Sent message {0} via {1}", message, this);
         }
 
-        private string FromMessage(MessageEnvelope message)
+        private CloudQueueMessage FromMessage(MessageEnvelope message)
         {
             var oldMessage = new BackwardCompatibilityMessageEnvelope
             {
@@ -223,13 +197,14 @@ namespace PipServices3.Azure.Queues
             };
             var content = _backwardCompatibility ? JsonConverter.ToJson(oldMessage) : JsonConverter.ToJson(message);
 
-            return content;
+            var envelope = new CloudQueueMessage(content);
+            return envelope;
         }
 
         public override async Task<MessageEnvelope> PeekAsync(string correlationId)
         {
             CheckOpened(correlationId);
-            PeekedMessage envelope = await _queue.PeekMessageAsync();
+            var envelope = await _queue.PeekMessageAsync();
 
             if (envelope == null) return null;
 
@@ -246,7 +221,7 @@ namespace PipServices3.Azure.Queues
         public override async Task<List<MessageEnvelope>> PeekBatchAsync(string correlationId, int messageCount)
         {
             CheckOpened(correlationId);
-            PeekedMessage[] envelopes = await _queue.PeekMessagesAsync(messageCount);
+            var envelopes = await _queue.PeekMessagesAsync(messageCount);
             var messages = new List<MessageEnvelope>();
 
             foreach (var envelope in envelopes)
@@ -264,12 +239,12 @@ namespace PipServices3.Azure.Queues
         public override async Task<MessageEnvelope> ReceiveAsync(string correlationId, long waitTimeout)
         {
             CheckOpened(correlationId);
-            QueueMessage envelope = null;
+            CloudQueueMessage envelope = null;
 
             do
             {
                 // Read the message and exit if received
-                envelope = await _queue.ReceiveMessageAsync(TimeSpan.FromMilliseconds(DefaultVisibilityTimeout), _cancel.Token);
+                envelope = await _queue.GetMessageAsync(TimeSpan.FromMilliseconds(DefaultVisibilityTimeout), null, null, _cancel.Token);
                 if (envelope != null) break;
                 if (waitTimeout <= 0) break;
 
@@ -295,11 +270,10 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(message.CorrelationId);
             // Extend the message visibility
-            var envelope = (QueueMessage)message.Reference;
+            var envelope = (CloudQueueMessage)message.Reference;
             if (envelope != null)
             {
-                var updateMessageResponse = await _queue.UpdateMessageAsync(envelope.MessageId, envelope.PopReceipt, visibilityTimeout: TimeSpan.FromMilliseconds(lockTimeout));
-                message.Reference = envelope.Update(updateMessageResponse.Value);
+                await _queue.UpdateMessageAsync(envelope, TimeSpan.FromMilliseconds(lockTimeout), MessageUpdateFields.Visibility);
                 _logger.Trace(message.CorrelationId, "Renewed lock for message {0} at {1}", message, this);
             }
         }
@@ -308,10 +282,10 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(message.CorrelationId);
             // Make the message immediately visible
-            var envelope = (QueueMessage)message.Reference;
+            var envelope = (CloudQueueMessage)message.Reference;
             if (envelope != null)
             {
-                await _queue.UpdateMessageAsync(envelope.MessageId, envelope.PopReceipt, visibilityTimeout: TimeSpan.FromMilliseconds(0));
+                await _queue.UpdateMessageAsync(envelope, TimeSpan.FromMilliseconds(0), MessageUpdateFields.Visibility);
                 message.Reference = null;
                 _logger.Trace(message.CorrelationId, "Abandoned message {0} at {1}", message, this);
             }
@@ -320,10 +294,10 @@ namespace PipServices3.Azure.Queues
         public override async Task CompleteAsync(MessageEnvelope message)
         {
             CheckOpened(message.CorrelationId);
-            var envelope = (QueueMessage)message.Reference;
+            var envelope = (CloudQueueMessage)message.Reference;
             if (envelope != null)
             {
-                await _queue.DeleteMessageAsync(envelope.MessageId, envelope.PopReceipt);
+                await _queue.DeleteMessageAsync(envelope);
                 message.Reference = null;
                 _logger.Trace(message.CorrelationId, "Completed message {0} at {1}", message, this);
             }
@@ -332,7 +306,7 @@ namespace PipServices3.Azure.Queues
         public override async Task MoveToDeadLetterAsync(MessageEnvelope message)
         {
             CheckOpened(message.CorrelationId);
-            var envelope = (QueueMessage)message.Reference;
+            var envelope = (CloudQueueMessage)message.Reference;
             if (envelope != null)
             {
                 // Resend message to dead queue if it is defined
@@ -341,8 +315,8 @@ namespace PipServices3.Azure.Queues
                     await _deadQueue.CreateIfNotExistsAsync();
 
                     var content = JsonConverter.ToJson(message);
-                    
-                    await _deadQueue.SendMessageAsync(content);
+                    var envelope2 = new CloudQueueMessage(content);
+                    await _deadQueue.AddMessageAsync(envelope2);
                 }
                 else
                 {
@@ -350,7 +324,7 @@ namespace PipServices3.Azure.Queues
                 }
 
                 // Remove the message from the queue
-                await _queue.DeleteMessageAsync(envelope.MessageId, envelope.PopReceipt);
+                await _queue.DeleteMessageAsync(envelope);
                 message.Reference = null;
 
                 _counters.IncrementOne("queue." + Name + ".dead_messages");
@@ -368,15 +342,7 @@ namespace PipServices3.Azure.Queues
 
             while (!_cancel.IsCancellationRequested)
             {
-                QueueMessage envelope = null;
-                try
-                {
-                    envelope = await _queue.ReceiveMessageAsync(TimeSpan.FromMilliseconds(DefaultVisibilityTimeout), _cancel.Token);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    _logger.Error(correlationId, ex, "Stop to receive the messages.");
-                }
+                var envelope = await _queue.GetMessageAsync(TimeSpan.FromMilliseconds(DefaultVisibilityTimeout), null, null, _cancel.Token);
 
                 if (envelope != null && !_cancel.IsCancellationRequested)
                 {
@@ -392,6 +358,7 @@ namespace PipServices3.Azure.Queues
                     catch (Exception ex)
                     {
                         _logger.Error(correlationId, ex, "Failed to process the message");
+                        //throw ex;
                     }
                 }
                 else
@@ -410,7 +377,7 @@ namespace PipServices3.Azure.Queues
         public override async Task ClearAsync(string correlationId)
         {
             CheckOpened(correlationId);
-            await _queue.ClearMessagesAsync();
+            await _queue.ClearAsync();
 
             _logger.Trace(null, "Cleared queue {0}", this);
         }

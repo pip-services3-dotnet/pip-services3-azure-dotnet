@@ -1,6 +1,4 @@
-﻿using Azure.Messaging.ServiceBus;
-
-using PipServices3.Components.Auth;
+﻿using PipServices3.Components.Auth;
 using PipServices3.Commons.Config;
 using PipServices3.Components.Connect;
 using PipServices3.Commons.Errors;
@@ -9,8 +7,13 @@ using PipServices3.Messaging.Queues;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Azure.ServiceBus.Core;
+
+using Mossharbor.AzureWorkArounds.ServiceBus;
 using IMessageReceiver = PipServices3.Messaging.Queues.IMessageReceiver;
 
 namespace PipServices3.Azure.Queues
@@ -20,13 +23,9 @@ namespace PipServices3.Azure.Queues
         private string _queueName;
         private string _connectionString;
 
-        private ServiceBusClient _queueClient;
-        private ServiceBusSender _messageSender;
-        private ServiceBusReceiver _messageReceiver;
-        private ServiceBusProcessor _messageProcessor;
-
-        private Func<ProcessMessageEventArgs, Task> _processMessageHandler;
-        private Func<ProcessErrorEventArgs, Task> _processErrorHandler;
+        private IQueueClient _queueClient;
+        private NamespaceManager _namespaceManager;
+        private MessageReceiver _messageReceiver;
 
         public ServiceBusMessageQueue()
             : this(null)
@@ -50,7 +49,7 @@ namespace PipServices3.Azure.Queues
 
         private void CheckOpened(string correlationId)
         {
-            if (_queueClient == null || _messageSender == null || _messageReceiver == null || _messageProcessor == null)
+            if (_queueClient == null || _namespaceManager == null || _messageReceiver == null)
             {
                 throw new InvalidStateException(correlationId, "NOT_OPENED", "The queue is not opened");
             }
@@ -58,7 +57,7 @@ namespace PipServices3.Azure.Queues
 
         public override bool IsOpen()
         {
-            return _queueClient != null && _messageReceiver != null;
+            return _queueClient != null && _namespaceManager != null && _messageReceiver != null;
         }
 
         public override async Task OpenAsync(string correlationId, List<ConnectionParams> connections, CredentialParams credential)
@@ -75,29 +74,20 @@ namespace PipServices3.Azure.Queues
 
                 _connectionString = ConfigParams.FromTuples(
                     "Endpoint", connection.GetAsNullableString("uri") ?? connection.GetAsNullableString("Endpoint"),
-                    "SharedAccessKeyName", credential.AccessId ?? credential.GetAsNullableString("shared_access_key_name") ?? credential.GetAsNullableString("SharedAccessKeyName"),
-                    "SharedAccessKey", credential.AccessKey ?? credential.GetAsNullableString("shared_access_key") ?? credential.GetAsNullableString("SharedAccessKey")
+                    "SharedAccessKeyName", credential.AccessId ?? credential.GetAsNullableString("SharedAccessKeyName"),
+                    "SharedAccessKey", credential.AccessKey ?? credential.GetAsNullableString("SharedAccessKey")
                 ).ToString();
 
                 _logger.Info(null, "Connecting queue {0} to {1}", Name, _connectionString);
 
-                _queueClient = new ServiceBusClient(_connectionString);
-
-                _messageSender = _queueClient.CreateSender(_queueName);
-                _messageReceiver = _queueClient.CreateReceiver(_queueName);
-
-                var options = new ServiceBusProcessorOptions
-                {
-                    AutoCompleteMessages = false,
-                    MaxConcurrentCalls = 2
-                };
-
-                _messageProcessor = _queueClient.CreateProcessor(_queueName, options);
+                _queueClient = new QueueClient(_connectionString, _queueName);
+                _namespaceManager = NamespaceManager.CreateFromConnectionString(_connectionString);
+                _messageReceiver = new MessageReceiver(_connectionString, _queueName);
             }
             catch (Exception ex)
             {
                 _queueClient = null;
-                _messageSender = null;
+                _namespaceManager = null;
                 _messageReceiver = null;
 
                 _logger.Error(correlationId, ex, $"Failed to open queue '{Name}'.");
@@ -108,47 +98,19 @@ namespace PipServices3.Azure.Queues
 
         public override async Task CloseAsync(string correlationId)
         {
-            await _messageSender.DisposeAsync();
-            await _messageReceiver.DisposeAsync();
-            await _queueClient.DisposeAsync();
+            await _queueClient.CloseAsync();
 
             _logger.Trace(correlationId, "Closed queue {0}", this);
         }
 
-        public override async Task<long> ReadMessageCountAsync()
+        public override Task<long> ReadMessageCountAsync()
         {
             CheckOpened(null);
-
-            var previousSequenceNumber = -1L;
-            var sequenceNumber = 0L;
-            var counter = 0L;
-            do
-            {
-                var peekMessages = await _messageReceiver.PeekMessagesAsync(int.MaxValue, sequenceNumber);
-
-                if (peekMessages.Count > 0)
-                {
-                    sequenceNumber = peekMessages[^1].SequenceNumber;
-
-                    if (sequenceNumber == previousSequenceNumber)
-                    {
-                        break;
-                    }
-
-                    previousSequenceNumber = sequenceNumber;
-                    counter += peekMessages.Count;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            while (true);
-
-            return await Task.FromResult(counter);
+            var queueDescription = _namespaceManager.GetQueue(_queueName);
+            return Task.FromResult(queueDescription.MessageCount);
         }
 
-        private MessageEnvelope ToMessage(ServiceBusReceivedMessage envelope)
+        private MessageEnvelope ToMessage(Message envelope, bool withLock = true)
         {
             if (envelope == null)
             {
@@ -160,10 +122,14 @@ namespace PipServices3.Azure.Queues
                 MessageType = envelope.ContentType,
                 CorrelationId = envelope.CorrelationId,
                 MessageId = envelope.MessageId,
-                SentTime = envelope.ScheduledEnqueueTime.UtcDateTime,
-                Message = envelope.Body.ToArray(),
-                Reference = envelope
+                SentTime = envelope.ScheduledEnqueueTimeUtc,
+                Message = envelope.Body,
             };
+
+            if (withLock)
+            {
+                message.Reference = envelope.SystemProperties?.LockToken;
+            }
 
             return message;
         }
@@ -172,14 +138,14 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(correlationId);
             
-            var envelope = new ServiceBusMessage(message.Message)
+            var envelope = new Message(message.Message)
             {
                 ContentType = message.MessageType,
                 CorrelationId = message.CorrelationId,
                 MessageId = message.MessageId
             };
 
-            await _messageSender.SendMessageAsync(envelope);
+            await _queueClient.SendAsync(envelope);
 
             _counters.IncrementOne("queue." + Name + ".sent_messages");
             _logger.Debug(message.CorrelationId, "Sent message {0} via {1}", message, this);
@@ -188,8 +154,8 @@ namespace PipServices3.Azure.Queues
         public override async Task<MessageEnvelope> PeekAsync(string correlationId)
         {
             CheckOpened(correlationId);
-            var envelope = await _messageReceiver.PeekMessageAsync();
-            var message = ToMessage(envelope);
+            var envelope = await _messageReceiver.PeekAsync();
+            var message = ToMessage(envelope, false);
 
             if (message != null)
             {
@@ -218,7 +184,7 @@ namespace PipServices3.Azure.Queues
         public override async Task<MessageEnvelope> ReceiveAsync(string correlationId, long waitTimeout)
         {
             CheckOpened(correlationId);
-            var envelope = await _messageReceiver.ReceiveMessageAsync(TimeSpan.FromMilliseconds(waitTimeout));
+            var envelope = await _messageReceiver.ReceiveAsync(TimeSpan.FromMilliseconds(waitTimeout));
             var message = ToMessage(envelope);
 
             if (message != null)
@@ -234,11 +200,11 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(message.CorrelationId);
 
-            var reference = message.Reference as ServiceBusReceivedMessage;
+            var reference = message.Reference?.ToString();
 
-            if (reference != null)
+            if (!string.IsNullOrWhiteSpace(reference))
             {
-                await _messageReceiver.RenewMessageLockAsync(reference);
+                await _messageReceiver.RenewLockAsync(message.Reference?.ToString());
                 _logger.Trace(message.CorrelationId, "Renewed lock for message {0} at {1}", message, this);
             }
         }
@@ -247,11 +213,11 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(message.CorrelationId);
 
-            var reference = message.Reference as ServiceBusReceivedMessage;
+            var reference = message.Reference?.ToString();
 
-            if (reference != null)
+            if (!string.IsNullOrWhiteSpace(reference))
             {
-                await _messageReceiver.AbandonMessageAsync(reference);
+                await _messageReceiver.AbandonAsync(reference);
                 message.Reference = null;
                 _logger.Trace(message.CorrelationId, "Abandoned message {0} at {1}", message, this);
             }
@@ -261,11 +227,11 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(message.CorrelationId);
 
-            var reference = message.Reference as ServiceBusReceivedMessage;
+            var reference = message.Reference?.ToString();
 
-            if (reference != null)
+            if (!string.IsNullOrWhiteSpace(reference))
             {
-                await _messageReceiver.CompleteMessageAsync(reference);
+                await _queueClient.CompleteAsync(reference);
                 message.Reference = null;
                 _logger.Trace(message.CorrelationId, "Completed message {0} at {1}", message, this);
             }
@@ -275,11 +241,11 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(message.CorrelationId);
 
-            var reference = message.Reference as ServiceBusReceivedMessage;
+            var reference = message.Reference?.ToString();
 
-            if (reference != null)
+            if (!string.IsNullOrWhiteSpace(reference))
             {
-                await _messageReceiver.DeadLetterMessageAsync(reference);
+                await _queueClient.DeadLetterAsync(reference);
                 message.Reference = null;
                 _counters.IncrementOne("queue." + Name + ".dead_messages");
                 _logger.Trace(message.CorrelationId, "Moved to dead message {0} at {1}", message, this);
@@ -291,40 +257,38 @@ namespace PipServices3.Azure.Queues
             CheckOpened(correlationId);
             _logger.Trace(correlationId, "Started listening messages at {0}", this);
 
-            _processMessageHandler = async (arg) =>
-            {
-                var message = ToMessage(arg.Message);
-
-                if (message != null)
+            _queueClient.RegisterMessageHandler(async (envelope, cancellationToken) =>
                 {
-                    _counters.IncrementOne("queue." + Name + ".received_messages");
-                    _logger.Debug(message.CorrelationId, "Received message {0} via {1}", message, this);
-                }
+                    var message = ToMessage(envelope);
 
-                try
+                    if (message != null)
+                    {
+                        _counters.IncrementOne("queue." + Name + ".received_messages");
+                        _logger.Debug(message.CorrelationId, "Received message {0} via {1}", message, this);
+                    }
+
+                    try
+                    {
+                        await receiver.ReceiveMessageAsync(message, this);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(correlationId, ex, "Failed to process the message");
+                        throw ex;
+                    }
+
+                    await _queueClient.CompleteAsync(envelope.SystemProperties.LockToken);
+                },
+                new MessageHandlerOptions(exception => 
+                    {
+                        _logger.Error(correlationId, exception.Exception, "Failed to process the message");
+                        return Task.CompletedTask;
+                    })
                 {
-                    await receiver.ReceiveMessageAsync(message, this);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(correlationId, ex, "Failed to process the message");
-                    throw;
-                }
-
-                await _messageReceiver.CompleteMessageAsync(arg.Message);
-            };
-
-            _processErrorHandler = async (arg) =>
-            {
-                _logger.Error(correlationId, arg.Exception, "Failed to process the message");
-                await Task.CompletedTask;
-            };
-
-            _messageProcessor.ProcessMessageAsync += _processMessageHandler;
-            _messageProcessor.ProcessErrorAsync += _processErrorHandler;
-
-            await _messageProcessor.StartProcessingAsync();
-
+                    AutoComplete = false,
+                    MaxConcurrentCalls = 1
+                });
+            
             await Task.CompletedTask;
         }
 
@@ -332,33 +296,47 @@ namespace PipServices3.Azure.Queues
         {
             CheckOpened(correlationId);
 
-            _messageProcessor.StopProcessingAsync().Wait();
+            // Close old client
+            try
+            {
+                if (_queueClient != null && !_queueClient.IsClosedOrClosing)
+                {
+                    _queueClient.CloseAsync().Wait();
+                    _queueClient = null;
+                }
 
-            _messageProcessor.ProcessMessageAsync -= _processMessageHandler;
-            _messageProcessor.ProcessErrorAsync -= _processErrorHandler;
+                if (_messageReceiver != null && !_messageReceiver.IsClosedOrClosing)
+                {
+                    _messageReceiver.CloseAsync().Wait();
+                    _messageReceiver = null;
+                }
+            }
+            catch
+            {
+                // Ignore...
+            }
+
+            // Create a new client
+            _queueClient = new QueueClient(_connectionString, _queueName);
+            _messageReceiver = new MessageReceiver(_connectionString, _queueName);
         }
 
         public override async Task ClearAsync(string correlationId)
         {
             CheckOpened(correlationId);
 
-            try
+            while (true)
             {
-                while (await _messageReceiver.PeekMessageAsync() != null)
+                var envelope = await _messageReceiver.ReceiveAsync(TimeSpan.FromMilliseconds(0));
+                if (envelope == null)
                 {
-                    var brokeredMessages = await _messageReceiver.ReceiveMessagesAsync(int.MaxValue);
-
-                    var completeTasks = brokeredMessages.Select(m => Task.Run(() => _messageReceiver.CompleteMessageAsync(m))).ToArray();
-
-                    Task.WaitAll(completeTasks);
+                    break;
                 }
 
-                _logger.Trace(correlationId, "Cleared queue {0}", this);
+                await _messageReceiver.CompleteAsync(envelope.SystemProperties.LockToken);
             }
-            catch (Exception ex)
-            {
-                _logger.Error(correlationId, ex, $"Failed to clear queue {this}");
-            }
+
+            _logger.Trace(correlationId, "Cleared queue {0}", this);
         }
     }
 }
