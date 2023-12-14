@@ -1,9 +1,13 @@
 # <img src="https://uploads-ssl.webflow.com/5ea5d3315186cf5ec60c3ee4/5edf1c94ce4c859f2b188094_logo.svg" alt="Pip.Services Logo" width="200"> <br/> Azure specific components .NET Changelog
 
+## <a name="3.6.6"></a> 3.6.6 (2023-12-14)
+### Breaking Changes
+* Excluded CosmosDB dependencies (throughput functionality)
+
 ## <a name="3.6.0-3.6.5"></a> 3.6.0-3.6.5 (2023-04-27)
 
 ### Breaking Changes
-* Migration from Microsoft.Azure.* packeges to Azure.* : 
+* Migration from Microsoft.Azure.* packages to Azure.* : 
     * CloudStorageTableLock
     * StorageMessageQueue
     * ServiceBusMessageTopic

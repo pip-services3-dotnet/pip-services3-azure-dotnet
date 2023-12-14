@@ -6,7 +6,6 @@ using PipServices3.Components.Connect;
 using PipServices3.Commons.Convert;
 using PipServices3.Commons.Errors;
 using PipServices3.Messaging.Queues;
-using PipServices3.Azure.Persistence.Data;
 
 using System;
 using System.Collections.Generic;

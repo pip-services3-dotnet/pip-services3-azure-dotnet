@@ -1,7 +1,6 @@
 ﻿using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 
-using PipServices3.Azure.Persistence.Data;
 using PipServices3.Components.Auth;
 using PipServices3.Commons.Config;
 using PipServices3.Components.Connect;

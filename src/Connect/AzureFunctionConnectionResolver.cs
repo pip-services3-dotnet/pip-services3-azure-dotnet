@@ -2,16 +2,9 @@
 using PipServices3.Commons.Refer;
 using PipServices3.Components.Auth;
 using PipServices3.Components.Connect;
+
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
-using static System.Net.WebRequestMethods;
-using YamlDotNet.Core.Tokens;
-using MongoDB.Driver;
-using static System.Formats.Asn1.AsnWriter;
-using System.Fabric.Query;
-using System.Net;
 
 namespace PipServices3.Azure.Connect
 {
