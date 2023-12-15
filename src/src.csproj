@@ -6,7 +6,7 @@
     <AssemblyName>PipServices3.Azure</AssemblyName>
     <ApplicationIcon />
     <Win32Resource />
-    <Version>3.7.1</Version>
+    <Version>3.7.0</Version>
     <Authors>Sergey Seroukhov, Alex Mazur, Danyil Tretiakov</Authors>
     <Copyright>Conceptual Vision Consulting LLC. 2017-2024</Copyright>
     <Description>Azure components for Pip.Services in .NET</Description>
@@ -37,7 +37,7 @@
     <PackageReference Include="Mossharbor.AzureWorkArounds.ServiceBus" Version="1.0.20" />
     <PackageReference Include="PipServices3.Commons" Version="3.5.1" />
     <PackageReference Include="PipServices3.Components" Version="3.6.1" />
-    <PackageReference Include="PipServices3.Container" Version="3.6.1" />
+    <PackageReference Include="PipServices3.Container" Version="3.4.1" />
     <PackageReference Include="PipServices3.Messaging" Version="3.6.1" />
   </ItemGroup>
 
