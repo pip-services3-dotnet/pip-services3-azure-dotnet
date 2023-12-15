@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <RootNamespace>PipServices3.Azure</RootNamespace>
     <AssemblyName>PipServices3.Azure</AssemblyName>
     <ApplicationIcon />
     <Win32Resource />
-    <Version>3.6.6</Version>
+    <Version>3.7.0</Version>
     <Authors>Sergey Seroukhov, Alex Mazur, Danyil Tretiakov</Authors>
-    <Copyright>Conceptual Vision Consulting LLC. 2017-2023</Copyright>
+    <Copyright>Conceptual Vision Consulting LLC. 2017-2024</Copyright>
     <Description>Azure components for Pip.Services in .NET</Description>
     <Company>Conceptual Vision Consulting LLC.</Company>
     <Product>PipServices3.Azure</Product>
@@ -35,10 +35,10 @@
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.21.0" />
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="6.1.1653" />
     <PackageReference Include="Mossharbor.AzureWorkArounds.ServiceBus" Version="1.0.20" />
-    <PackageReference Include="PipServices3.Commons" Version="3.4.1" />
-    <PackageReference Include="PipServices3.Components" Version="3.5.0" />
-    <PackageReference Include="PipServices3.Container" Version="3.3.0" />
-    <PackageReference Include="PipServices3.Messaging" Version="3.5.0" />
+    <PackageReference Include="PipServices3.Commons" Version="3.5.0" />
+    <PackageReference Include="PipServices3.Components" Version="3.6.0" />
+    <PackageReference Include="PipServices3.Container" Version="3.4.0" />
+    <PackageReference Include="PipServices3.Messaging" Version="3.6.0" />
   </ItemGroup>
 
 </Project>

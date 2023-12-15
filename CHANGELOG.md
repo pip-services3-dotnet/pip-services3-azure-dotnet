@@ -21,6 +21,11 @@
 ### Note
 It was a mistaken version number. The package has 3.4.1 number.
 
+## <a name="3.6.0"></a> 3.6.0 (2023-12-15)
+
+### Breaking Changes
+* Migrate to .NET 8.0
+
 ## <a name="3.5.0"></a> 3.5.0 (2022-11-02)
 
 ### Breaking Changes
