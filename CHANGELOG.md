@@ -1,5 +1,10 @@
 # <img src="https://uploads-ssl.webflow.com/5ea5d3315186cf5ec60c3ee4/5edf1c94ce4c859f2b188094_logo.svg" alt="Pip.Services Logo" width="200"> <br/> Azure specific components .NET Changelog
 
+## <a name="3.7.1"></a> 3.7.1 (2023-12-15)
+
+### Breaking Changes
+* Migrate to .NET 8.0
+
 ## <a name="3.6.6"></a> 3.6.6 (2023-12-14)
 ### Breaking Changes
 * Excluded CosmosDB dependencies (throughput functionality)
@@ -20,11 +25,6 @@
 
 ### Note
 It was a mistaken version number. The package has 3.4.1 number.
-
-## <a name="3.6.0"></a> 3.6.0 (2023-12-15)
-
-### Breaking Changes
-* Migrate to .NET 8.0
 
 ## <a name="3.5.0"></a> 3.5.0 (2022-11-02)
 
