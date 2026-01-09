@@ -15,11 +15,6 @@ using System.Threading.Tasks;
 
 namespace PipServices3.Azure.Queues
 {
-    /// <summary>
-    /// It requires deprecated package Microsoft.Azure.Storage.Queue.
-    /// Please use <see cref="PipServices3.Azure.Queues.StorageMessageQueue"/> instead.
-    /// </summary>
-    [Obsolete("It requires deprecated package Microsoft.Azure.Storage.Queue. Please use PipServices3.Azure.Queues.StorageMessageQueueV2 instead.")]
     public class StorageMessageQueue : MessageQueue
     {
         private bool _backwardCompatibility = true;

@@ -6,10 +6,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-using Microsoft.Azure.KeyVault;
-using Microsoft.Rest.Azure;
-using Microsoft.Azure.KeyVault.Models;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 namespace PipServices3.Azure.Auth
 {
@@ -19,7 +17,8 @@ namespace PipServices3.Azure.Auth
         private string _clientId;
         private string _clientKey;
         private string _thumbPrint;
-        private Microsoft.Azure.KeyVault.KeyVaultClient _client;
+        private string _tenantId;
+        private SecretClient _client;
 
         public KeyVaultClient(ConnectionParams connection, CredentialParams credential)
         {
@@ -38,57 +37,60 @@ namespace PipServices3.Azure.Auth
             _clientKey = credential.AccessKey ?? credential.GetAsNullableString("ClientKey");
             _thumbPrint = credential.GetAsNullableString("thumbprint")
                 ?? credential.GetAsNullableString("ThumbPrint");
+            _tenantId = credential.GetAsNullableString("tenant_id")
+                ?? credential.GetAsNullableString("TenantId")
+                ?? credential.GetAsNullableString("tenant");
+
             if (_clientKey == null && _thumbPrint == null)
                 throw new ArgumentNullException("Neither ClientKey or ThumbPrint parameters are not defined");
 
-            _client = new Microsoft.Azure.KeyVault.KeyVaultClient(
-                new Microsoft.Azure.KeyVault.KeyVaultClient.AuthenticationCallback(GetAccessToken));
+            if (_clientKey != null)
+            {
+                if (string.IsNullOrWhiteSpace(_tenantId))
+                    throw new ArgumentNullException("TenantId parameter is not defined for client secret authentication");
+
+                var credentialClient = new ClientSecretCredential(_tenantId, _clientId, _clientKey);
+                _client = new SecretClient(new Uri(_keyVault), credentialClient);
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(_tenantId))
+                    throw new ArgumentNullException("TenantId parameter is not defined for certificate authentication");
+
+                var cert = FindCertificateByThumbprint(_thumbPrint);
+                if (cert == null)
+                    throw new ArgumentNullException("Certificate with the specified thumbprint was not found");
+
+                var credentialClient = new ClientCertificateCredential(_tenantId, _clientId, cert);
+                _client = new SecretClient(new Uri(_keyVault), credentialClient);
+            }
         }
 
         public async Task<List<string>> GetSecretNamesAsync()
         {
-            var page = await _client.GetSecretsAsync(_keyVault);
             var result = new List<string>();
-
-            while (page != null)
+            await foreach (var prop in _client.GetPropertiesOfSecretsAsync())
             {
-                Task<IPage<SecretItem>> nextPageTask = null;
-
-                if (!string.IsNullOrWhiteSpace(page.NextPageLink))
-                {
-                    nextPageTask = _client.GetSecretsNextAsync(page.NextPageLink);
-                }
-
-                foreach (var item in page)
-                {
-                    result.Add(item.Identifier.Name);
-                }
-
-                if (nextPageTask == null)
-                {
-                    break;
-                }
-
-                page = await nextPageTask;
+                if (!string.IsNullOrEmpty(prop.Name))
+                    result.Add(prop.Name);
             }
-
             return result;
         }
 
         public async Task<string> GetSecretValueAsync(string secretName)
         {
-            var message = await _client.GetSecretAsync(_keyVault + "/secrets/" + secretName);
-            return message?.Value;
+            var response = await _client.GetSecretAsync(secretName);
+            return response?.Value?.Value;
         }
 
         public async Task SetSecretValueAsync(string secretName, string secretValue)
         {
-            await _client.SetSecretAsync(_keyVault, secretName, secretValue);
+            await _client.SetSecretAsync(secretName, secretValue);
         }
 
         public async Task DeleteSecretAsync(string secretName)
         {
-            await _client.DeleteSecretAsync(_keyVault, secretName);
+            await _client.StartDeleteSecretAsync(secretName);
         }
 
         public async Task<Dictionary<string, string>> GetSecretsAsync()
@@ -101,24 +103,6 @@ namespace PipServices3.Azure.Auth
                 result[secretName] = secretValue;
             }
             return result;
-        }
-
-        public async Task<string> GetAccessToken(string authority, string resource, string scope)
-        {
-            var context = new AuthenticationContext(authority, TokenCache.DefaultShared);
-            if (_clientKey != null)
-            {
-                var clientCredential = new ClientCredential(_clientId, _clientKey);
-                var result = await context.AcquireTokenAsync(resource, clientCredential);
-                return result.AccessToken;
-            }
-            else
-            {
-                var clientAssertionCertPfx = FindCertificateByThumbprint(_thumbPrint);
-                var cert = new ClientAssertionCertificate(_clientId, clientAssertionCertPfx);
-                var result = await context.AcquireTokenAsync(resource, cert);
-                return result.AccessToken;
-            }
         }
 
         public static X509Certificate2 FindCertificateByThumbprint(string thumbPrint)
