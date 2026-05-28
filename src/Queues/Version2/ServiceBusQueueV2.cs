@@ -78,9 +78,7 @@ namespace PipServices3.Azure.Queues.Version2
                     "SharedAccessKeyName", credential.AccessId ?? credential.GetAsNullableString("shared_access_key_name") ?? credential.GetAsNullableString("SharedAccessKeyName"),
                     "SharedAccessKey", credential.AccessKey ?? credential.GetAsNullableString("shared_access_key") ?? credential.GetAsNullableString("SharedAccessKey")
                 ).ToString();
-
-                _logger.Info(null, "Connecting queue {0} to {1}", Name, _connectionString);
-
+                
                 _queueClient = new ServiceBusClient(_connectionString);
 
                 _messageSender = _queueClient.CreateSender(_queueName);
@@ -93,6 +91,8 @@ namespace PipServices3.Azure.Queues.Version2
                 };
 
                 _messageProcessor = _queueClient.CreateProcessor(_queueName, options);
+                
+                _logger.Info(null, $"Successfully opened queue '{Name}'");
             }
             catch (Exception ex)
             {

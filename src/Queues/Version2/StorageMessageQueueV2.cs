@@ -84,9 +84,7 @@ namespace PipServices3.Azure.Queues.Version2
                     "AccountName", credential.AccessId ?? credential.GetAsNullableString("account_name") ?? credential.GetAsNullableString("AccountName"),
                     "AccountKey", credential.AccessKey ?? credential.GetAsNullableString("account_key") ?? credential.GetAsNullableString("AccountKey")
                 ).ToString();
-
-                _logger.Info(null, "Connecting queue {0} to {1}", Name, connectionString);
-
+                
                 var queueName = connection.Get("queue") ?? Name;
                 _queue = new QueueClient(connectionString, queueName);
                 await _queue.CreateIfNotExistsAsync();
@@ -94,6 +92,7 @@ namespace PipServices3.Azure.Queues.Version2
                 var deadName = connection.Get("dead");
                 _deadQueue = deadName != null ? new QueueClient(connectionString, deadName) : null;
 
+                _logger.Info(null, $"Successfully opened queue '{Name}'");
             }
             catch (Exception ex)
             {

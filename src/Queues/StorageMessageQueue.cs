@@ -89,9 +89,7 @@ namespace PipServices3.Azure.Queues
                     "AccountName", credential.AccessId ?? credential.GetAsNullableString("account_name") ?? credential.GetAsNullableString("AccountName"),
                     "AccountKey", credential.AccessKey ?? credential.GetAsNullableString("account_key") ?? credential.GetAsNullableString("AccountKey")
                 ).ToString();
-
-                _logger.Info(null, "Connecting queue {0} to {1}", Name, connectionString);
-
+                
                 var storageAccount = CloudStorageAccount.Parse(connectionString);
                 var client = storageAccount.CreateCloudQueueClient();
 
@@ -102,6 +100,7 @@ namespace PipServices3.Azure.Queues
                 var deadName = connection.Get("dead");
                 _deadQueue = deadName != null ? client.GetQueueReference(deadName) : null;
 
+                _logger.Info(null, $"Successfully opened queue '{Name}'");
             }
             catch (Exception ex)
             {

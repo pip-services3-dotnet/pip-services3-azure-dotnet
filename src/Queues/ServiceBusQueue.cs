@@ -77,12 +77,12 @@ namespace PipServices3.Azure.Queues
                     "SharedAccessKeyName", credential.AccessId ?? credential.GetAsNullableString("SharedAccessKeyName"),
                     "SharedAccessKey", credential.AccessKey ?? credential.GetAsNullableString("SharedAccessKey")
                 ).ToString();
-
-                _logger.Info(null, "Connecting queue {0} to {1}", Name, _connectionString);
-
+                
                 _queueClient = new QueueClient(_connectionString, _queueName);
                 _namespaceManager = NamespaceManager.CreateFromConnectionString(_connectionString);
                 _messageReceiver = new MessageReceiver(_connectionString, _queueName);
+                
+                _logger.Info(null, $"Successfully opened queue '{Name}'");
             }
             catch (Exception ex)
             {
