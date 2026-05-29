@@ -53,8 +53,7 @@ namespace PipServices3.Azure.Lock
             }
             catch (Exception exception)
             {
-                _logger.Error("CloudStorageTableLock", exception,
-                    $"Failed to configure the connection to lock storage table with parameters '{_connectionConfigParams}'.");
+                _logger.Error("CloudStorageTableLock", exception, $"Failed to configure the connection to lock storage table.");
             }
         }
 

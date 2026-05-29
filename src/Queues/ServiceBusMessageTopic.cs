@@ -135,7 +135,7 @@ namespace PipServices3.Azure.Queues
                 {
                     if (_topicClient == null)
                     {
-                        _logger.Info(null, "Connecting topic {0} to Topic={1};{2}", Name, _topicName, _connectionString);
+                        _logger.Info(null, "Connecting topic {0} to Topic={1}", Name, _topicName);
 
                         _topicClient = new TopicClient(_connectionString, _topicName);
                     }
@@ -169,8 +169,8 @@ namespace PipServices3.Azure.Queues
                             }
                         }
 
-                        _logger.Info(null, "Connecting subscription {0} to Topic={1};Subscription={2};{3}",
-                            Name, _topicName, _subscriptionName, _connectionString);
+                        _logger.Info(null, "Connecting subscription {0} to Topic={1};Subscription={2}",
+                            Name, _topicName, _subscriptionName);
 
                         _subscriptionClient = new SubscriptionClient(
                             _connectionString, _topicName, _subscriptionName, ReceiveMode.PeekLock);
